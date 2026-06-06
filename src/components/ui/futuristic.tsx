@@ -44,12 +44,14 @@ export function NeonGlow({ children, color = 'blue' }: { children: React.ReactNo
   );
 }
 
-// Animated border
+// Animated border (now uses glass/transparent style to match CyberCard everywhere)
 export function AnimatedBorder({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`relative group ${className}`}>
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-gradient-x" />
-      <div className="relative bg-zinc-900 rounded-lg">
+      {/* Animated gradient border glow */}
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 rounded-2xl blur opacity-25 group-hover:opacity-70 transition duration-700 animate-gradient-x" />
+      {/* Glass inner card */}
+      <div className="relative rounded-2xl bg-zinc-950/80 backdrop-blur-xl border border-white/10">
         {children}
       </div>
     </div>

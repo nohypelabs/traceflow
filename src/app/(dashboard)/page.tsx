@@ -11,8 +11,9 @@ import { useSocket } from '@/hooks/use-socket';
 import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from '@/components/ui/animation';
 import { QueryError } from '@/components/ui/error-boundary';
 import { 
-  AnimatedGrid, FloatingParticles, AnimatedBorder, HolographicCard, NeonGlow 
+  AnimatedGrid, FloatingParticles, AnimatedBorder, NeonGlow 
 } from '@/components/ui/futuristic';
+import { CyberCard } from '@/components/ui/page-wrapper';
 import type { DashboardStats, AlertWithDevice } from '@/types';
 
 const severityAccent: Record<string, string> = {
@@ -177,6 +178,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Grid — 4 mission-critical numbers */}
+        {/* Using AnimatedBorder (now glass inside) + extra animated glow so stats feel more premium/special than regular cards */}
         <StaggerContainer className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
           <StaggerItem>
             <AnimatedBorder>
@@ -243,7 +245,7 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 md:gap-6">
           {/* Fleet Status — terminal style */}
           <SlideUp delay={0.25}>
-            <HolographicCard>
+            <CyberCard>
               <div className="p-5 md:p-6">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -290,12 +292,12 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-            </HolographicCard>
+            </CyberCard>
           </SlideUp>
 
           {/* Recent Alerts — severity aware */}
           <SlideUp delay={0.35}>
-            <HolographicCard>
+            <CyberCard>
               <div className="p-5 md:p-6">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -356,7 +358,7 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
-            </HolographicCard>
+            </CyberCard>
           </SlideUp>
         </div>
       </FadeIn>
