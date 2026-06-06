@@ -42,26 +42,41 @@ export function Sidebar({ collapsed = false, onToggle, onClose }: SidebarProps) 
   return (
     <aside
       className={cn(
-        'flex h-screen flex-col border-r bg-white dark:bg-zinc-950 transition-all duration-300',
+        'relative flex h-screen flex-col transition-all duration-300',
+        'border-r border-white/[0.06]',
+        'bg-zinc-950/80 backdrop-blur-xl',
         collapsed ? 'w-16' : 'w-64',
       )}
     >
+      {/* Scanline overlay */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(59,130,246,0.15) 2px, rgba(59,130,246,0.15) 4px)',
+        }}
+      />
+
       {/* Logo */}
-      <div className="flex h-14 items-center justify-between border-b px-4">
+      <div className="relative z-10 flex h-14 items-center justify-between border-b border-white/[0.06] px-4">
         {!collapsed ? (
-          <Link href="/" className="flex items-center gap-2">
-            <MapPin className="h-6 w-6 text-blue-600" />
-            <span className="text-lg font-bold">TraceFlow</span>
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="relative">
+              <MapPin className="h-6 w-6 text-cyan-400 transition-all group-hover:text-cyan-300" />
+              <div className="absolute -inset-1 bg-cyan-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              TraceFlow
+            </span>
           </Link>
         ) : (
-          <Link href="/" className="mx-auto">
-            <MapPin className="h-6 w-6 text-blue-600" />
+          <Link href="/" className="mx-auto group relative">
+            <MapPin className="h-6 w-6 text-cyan-400" />
+            <div className="absolute -inset-1 bg-cyan-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
           </Link>
         )}
         {onClose && (
           <button
             onClick={onClose}
-            className="rounded-lg p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 md:hidden"
+            className="rounded-lg p-1 text-zinc-400 hover:bg-white/5 md:hidden"
           >
             <X className="h-5 w-5" />
           </button>
@@ -69,7 +84,7 @@ export function Sidebar({ collapsed = false, onToggle, onClose }: SidebarProps) 
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-1 p-2">
+      <nav className="relative z-10 flex-1 space-y-1 p-2 overflow-y-auto">
         {navItems.map((item) => {
           const isActive =
             item.href === '/'
@@ -82,27 +97,44 @@ export function Sidebar({ collapsed = false, onToggle, onClose }: SidebarProps) 
               href={item.href}
               onClick={onClose}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                 isActive
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                  : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800',
+                  ? 'text-cyan-300'
+                  : 'text-zinc-500 hover:text-zinc-200',
                 collapsed && 'justify-center px-2',
               )}
               title={collapsed ? item.label : undefined}
             >
-              <item.icon className="h-4 w-4 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
+              {/* Active background glow */}
+              {isActive && (
+                <div className="absolute inset-0 rounded-lg bg-cyan-500/10 border border-cyan-500/20" style={{
+                  boxShadow: 'inset 0 0 20px rgba(6, 182, 212, 0.1), 0 0 15px rgba(6, 182, 212, 0.05)',
+                }} />
+              )}
+
+              <item.icon className={cn(
+                'relative z-10 h-4 w-4 shrink-0 transition-colors',
+                isActive ? 'text-cyan-400' : 'group-hover:text-zinc-300',
+              )} />
+              {!collapsed && (
+                <span className="relative z-10">{item.label}</span>
+              )}
+
+              {/* Active indicator dot */}
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 rounded-r-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.6)]" />
+              )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Collapse/Expand Button - Center Bottom */}
+      {/* Collapse/Expand */}
       {onToggle && (
-        <div className="hidden md:flex justify-center border-t p-2">
+        <div className="relative z-10 hidden md:flex justify-center border-t border-white/[0.06] p-2">
           <button
             onClick={onToggle}
-            className="flex items-center justify-center rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="flex items-center justify-center rounded-lg p-2 text-zinc-600 hover:text-zinc-300 hover:bg-white/5 transition-colors"
             title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
           >
             {collapsed ? (
@@ -115,17 +147,19 @@ export function Sidebar({ collapsed = false, onToggle, onClose }: SidebarProps) 
       )}
 
       {/* User info */}
-      <div className="border-t p-4">
+      <div className="relative z-10 border-t border-white/[0.06] p-4">
         <div className={cn('flex items-center gap-3', collapsed && 'justify-center')}>
-          <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
+          <div className="relative h-8 w-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shrink-0"
+            style={{ boxShadow: '0 0 12px rgba(6, 182, 212, 0.3)' }}
+          >
             <span className="text-sm font-medium text-white">
               {(session?.user?.name ?? 'U').charAt(0).toUpperCase()}
             </span>
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{session?.user?.name ?? 'User'}</p>
-              <p className="text-xs text-zinc-500 truncate">{session?.user?.email ?? ''}</p>
+              <p className="text-sm font-medium text-zinc-200 truncate">{session?.user?.name ?? 'User'}</p>
+              <p className="text-xs text-zinc-600 truncate">{session?.user?.email ?? ''}</p>
             </div>
           )}
         </div>

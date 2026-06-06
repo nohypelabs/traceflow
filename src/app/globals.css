@@ -252,3 +252,180 @@
   );
   pointer-events: none;
 }
+
+/* ============================================
+   Futuristic Auth Form Styles (Login / Register)
+   ============================================ */
+
+/* Glass + neon tech input used on auth pages */
+.futuristic-input {
+  font-feature-settings: "tnum";
+  letter-spacing: 0.01em;
+  transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+  caret-color: #67e8f9;
+}
+
+.futuristic-input:focus {
+  box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.15);
+}
+
+.futuristic-input::placeholder {
+  color: rgb(113 113 122 / 0.6);
+}
+
+/* Neon action button (gradient + sweep + glow) */
+.neon-button {
+  position: relative;
+  font-feature-settings: "tnum";
+  letter-spacing: 0.5px;
+  transition: transform 0.1s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.neon-button:hover:not(:disabled) {
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.35);
+  filter: brightness(1.05);
+}
+
+.neon-button:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+/* Optional: make the light sweep more visible on dark cards */
+.neon-button .absolute {
+  pointer-events: none;
+}
+
+/* Strength meter bars already styled inline in JSX for register, 
+   but we can provide a utility if reused */
+.strength-bar {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.1);
+  transition: background-color 0.2s ease;
+}
+
+/* ============================================
+   Futuristic Dashboard Card Overrides
+   ============================================ */
+
+/* Radix UI Card — cyberpunk glassmorphism */
+.rt-Card {
+  background: rgba(24, 24, 27, 0.6) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top accent glow line on cards */
+.rt-Card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.25), transparent);
+  pointer-events: none;
+}
+
+/* Radix Heading — neon tint */
+.rt-Heading {
+  color: rgb(228, 228, 231);
+}
+
+/* Radix Text — softer zinc */
+.rt-Text {
+  color: rgb(161, 161, 170);
+}
+
+/* Radix Badge — futuristic */
+.rt-Badge {
+  border-radius: 9999px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+/* Radix Tabs — neon active state */
+.rt-TabTrigger[data-state='active'] {
+  color: rgb(6, 182, 212);
+  border-bottom-color: rgba(6, 182, 212, 0.4);
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.1);
+}
+
+.rt-TabTrigger {
+  color: rgb(113, 113, 122);
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.rt-TabTrigger:hover {
+  color: rgb(161, 161, 170);
+}
+
+/* Radix Separator — subtle line */
+.rt-Separator {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Dashboard page input fields — match futuristic theme */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="number"],
+select,
+textarea {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgb(228, 228, 231);
+  border-radius: 0.5rem;
+  transition: all 0.15s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(6, 182, 212, 0.5);
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.2);
+}
+
+input::placeholder {
+  color: rgb(113, 113, 122);
+}
+
+/* Table rows — hover glow */
+table tbody tr {
+  transition: all 0.15s;
+}
+
+table tbody tr:hover {
+  background: rgba(6, 182, 212, 0.03);
+}
+
+/* Scrollbar — dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Button hover glow */
+button:hover:not(:disabled) {
+  transition: all 0.15s;
+}
