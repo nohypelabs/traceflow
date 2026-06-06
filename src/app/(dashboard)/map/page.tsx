@@ -1,12 +1,33 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Layers, Maximize2, Crosshair, Target } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { MapPin, Layers, Maximize2, Crosshair, Target, Sidebar } from 'lucide-react';
 import { PageWrapper, CyberCard } from '@/components/ui/page-wrapper';
 import { NeonButton } from '@/components/ui/page-wrapper';
 
+const MapView = dynamic(() => import('@/components/map/map-view'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full flex items-center justify-center text-zinc-400">
+      Loading map...
+    </div>
+  ),
+});
+
 export default function MapPage() {
   const [showSidebar, setShowSidebar] = useState(true);
+  const [mapResizeKey, setMapResizeKey] = useState(0);
+  const [fitKey, setFitKey] = useState(0);
+
+  const toggleSidebar = () => {
+    setShowSidebar((v) => !v);
+    setMapResizeKey((k) => k + 1);
+  };
+
+  const handleCenterAll = () => {
+    setFitKey((k) => k + 1);
+  };
 
   return (
     <PageWrapper
@@ -17,7 +38,10 @@ export default function MapPage() {
           <button className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:border-cyan-500/30 hover:bg-white/10 transition">
             <Layers className="h-3.5 w-3.5" /> Layers
           </button>
-          <button className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:border-cyan-500/30 hover:bg-white/10 transition">
+          <button 
+            onClick={handleCenterAll}
+            className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:border-cyan-500/30 hover:bg-white/10 transition"
+          >
             <Crosshair className="h-3.5 w-3.5" /> Center All
           </button>
           <NeonButton onClick={() => {}}>
@@ -26,56 +50,58 @@ export default function MapPage() {
         </div>
       }
     >
-      <div className="flex h-[calc(100vh-11rem)] gap-4">
+      <div className="flex h-[calc(100vh-13rem)] min-h-[520px] gap-4">
         {/* Map Area */}
-        <div className="flex-1">
-          <CyberCard glow className="relative h-full overflow-hidden">
-            {/* Grid background */}
-            <div className="absolute inset-0" style={{
-              backgroundImage: `linear-gradient(rgba(6,182,212,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.06) 1px, transparent 1px)`,
-              backgroundSize: '42px 42px',
-            }} />
+        <div className="flex-1 relative h-full">
+          <CyberCard glow className="relative h-full overflow-hidden min-h-[520px]">
+            {/* Force full height container so Leaflet map + overlays truly fill the card */}
+            <div className="relative h-full w-full">
+              {/* Real Leaflet + OSM Map */}
+              <MapView
+                devices={[
+                  { id: 'd1', name: 'Truk Armada-07', status: 'ONLINE', lastLatitude: -6.2088, lastLongitude: 106.8456, vehiclePlate: 'B 1234 ABC' },
+                  { id: 'd2', name: 'Mobil Ops #12', status: 'ONLINE', lastLatitude: -6.175, lastLongitude: 106.865, vehiclePlate: 'B 5678 DEF' },
+                  { id: 'd3', name: 'Motor Kurir-03', status: 'ONLINE', lastLatitude: -6.22, lastLongitude: 106.81, vehiclePlate: 'B 9012 GHI' },
+                  { id: 'd4', name: 'Van Logistik-09', status: 'IDLE', lastLatitude: -6.19, lastLongitude: 106.83, vehiclePlate: 'B 3456 JKL' },
+                  { id: 'd6', name: 'Ambulance Support', status: 'ONLINE', lastLatitude: -6.205, lastLongitude: 106.85, vehiclePlate: 'B 1122 VWX' },
+                ]}
+                resizeKey={mapResizeKey}
+                fitKey={fitKey}
+              />
 
-            {/* Center HUD */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative">
-                <div className="h-28 w-28 rounded-full border border-cyan-500/30 flex items-center justify-center">
-                  <div className="h-14 w-14 rounded-full border border-cyan-500/40 flex items-center justify-center">
-                    <MapPin className="h-7 w-7 text-cyan-400/60" />
-                  </div>
-                </div>
-                <div className="absolute inset-0 rounded-full border border-cyan-500/10 animate-ping" />
+              {/* Futuristic overlays on top of real map (tetap pertahankan vibe cyber) */}
+              <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full border border-emerald-500/30 bg-zinc-950/80 backdrop-blur px-3 py-1 text-[10px] tracking-[1.5px] text-emerald-400 z-10">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE TRACKING
               </div>
-            </div>
 
-            {/* Live badge */}
-            <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full border border-emerald-500/30 bg-zinc-950/80 backdrop-blur px-3 py-1 text-[10px] tracking-[1.5px] text-emerald-400">
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE TRACKING
-            </div>
+              <div className="absolute top-4 right-4 flex gap-3 text-[10px] bg-zinc-950/80 backdrop-blur border border-white/10 rounded-full px-3 py-1 z-10">
+                <div>28 <span className="text-zinc-500">devices</span></div>
+                <div className="text-emerald-400">21 online</div>
+                <div>253.7 <span className="text-zinc-500">km today</span></div>
+              </div>
 
-            {/* Mock live stats strip for demo */}
-            <div className="absolute top-4 right-4 flex gap-3 text-[10px] bg-zinc-950/80 backdrop-blur border border-white/10 rounded-full px-3 py-1">
-              <div>28 <span className="text-zinc-500">devices</span></div>
-              <div className="text-emerald-400">21 online</div>
-              <div>253.7 <span className="text-zinc-500">km today</span></div>
+              {/* Re-open side panel when collapsed (desktop) — offset so it doesn't overlap the stats HUD */}
+              {!showSidebar && (
+                <button
+                  onClick={toggleSidebar}
+                  className="absolute top-4 right-[13rem] z-20 flex items-center gap-1.5 rounded-full border border-white/15 bg-zinc-950/80 backdrop-blur px-2.5 py-1 text-[10px] text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-300 transition"
+                  title="Show active devices"
+                >
+                  <Sidebar className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">DEVICES</span>
+                </button>
+              )}
             </div>
-
-            {/* Placeholder notice */}
-            <div className="absolute bottom-4 left-4 rounded-xl border border-white/10 bg-zinc-950/80 px-3 py-2 text-[10px] text-zinc-500 backdrop-blur">
-              LEAFLET MAP — INTEGRASI AKTIF DI KOMPONEN map-view.tsx
-            </div>
-
-            {/* Future: real <MapView /> component goes here */}
           </CyberCard>
         </div>
 
         {/* Side panel */}
         {showSidebar && (
-          <div className="hidden w-72 lg:block">
-            <CyberCard className="h-full p-4 flex flex-col">
+          <div className="hidden w-72 lg:block h-full">
+            <CyberCard className="h-full p-4 flex flex-col min-h-[520px]">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-xs font-medium tracking-[2px] text-zinc-400">PERANGKAT AKTIF</div>
-                <button onClick={() => setShowSidebar(false)} className="text-zinc-500 hover:text-zinc-300"><Maximize2 className="h-3.5 w-3.5" /></button>
+                <button onClick={toggleSidebar} className="text-zinc-500 hover:text-zinc-300"><Maximize2 className="h-3.5 w-3.5" /></button>
               </div>
 
               <div className="flex-1 space-y-2 overflow-auto pr-1 text-sm">

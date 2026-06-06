@@ -77,7 +77,7 @@ export function CyberCard({
       {/* Subtle scanlines */}
       <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.02)_0px,rgba(255,255,255,0.02)_1px,transparent_1px,transparent_3px)]" />
 
-      <div className={`relative ${glow ? 'shadow-[0_0_40px_rgba(6,182,212,0.06)]' : ''}`}>
+      <div className={`relative h-full ${glow ? 'shadow-[0_0_40px_rgba(6,182,212,0.06)]' : ''}`}>
         {children}
       </div>
     </div>
