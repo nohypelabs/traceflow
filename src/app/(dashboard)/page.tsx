@@ -2,20 +2,35 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-provider';
-import { MapPin, Activity, Bell, Truck, Wifi, WifiOff, Clock, AlertTriangle, Zap } from 'lucide-react';
+import { 
+  MapPin, Activity, Bell, Truck, Wifi, WifiOff, Clock, AlertTriangle, Zap, 
+  Target, TrendingUp 
+} from 'lucide-react';
 import Link from 'next/link';
 import { useSocket } from '@/hooks/use-socket';
 import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from '@/components/ui/animation';
-import { StatCard, AlertCard, DeviceStatusBadge } from '@/components/ui/radix';
 import { QueryError } from '@/components/ui/error-boundary';
-import { AnimatedGrid, FloatingParticles, AnimatedBorder, HolographicCard, GlitchText, NeonGlow } from '@/components/ui/futuristic';
-import { Card, Flex, Box, Heading, Text, Badge, Button } from '@radix-ui/themes';
+import { 
+  AnimatedGrid, FloatingParticles, AnimatedBorder, HolographicCard, NeonGlow 
+} from '@/components/ui/futuristic';
 import type { DashboardStats, AlertWithDevice } from '@/types';
+
+const severityAccent: Record<string, string> = {
+  CRITICAL: 'border-red-500/60 bg-red-500/10 text-red-400',
+  WARNING: 'border-yellow-500/60 bg-yellow-500/10 text-yellow-400',
+  INFO: 'border-cyan-500/60 bg-cyan-500/10 text-cyan-400',
+};
+
+const severityIconColor: Record<string, string> = {
+  CRITICAL: 'text-red-400',
+  WARNING: 'text-yellow-400',
+  INFO: 'text-cyan-400',
+};
 
 export default function DashboardPage() {
   const { data: stats, isLoading, error: statsError, refetch: refetchStats } = api.dashboard.getStats.useQuery();
   const { data: recentAlerts, error: alertsError, refetch: refetchAlerts } = api.dashboard.getRecentAlerts.useQuery();
-  const { socket } = useSocket();
+  const { socket, isConnected } = useSocket();
   const [realtimeAlerts, setRealtimeAlerts] = useState<AlertWithDevice[]>([]);
   const [onlineDevices, setOnlineDevices] = useState<Set<string>>(new Set());
 
@@ -48,26 +63,64 @@ export default function DashboardPage() {
 
   // Handle errors
   if (statsError) {
-    return <QueryError error={statsError} retry={refetchStats} />;
+    return (
+      <div className="relative min-h-screen">
+        <AnimatedGrid />
+        <FloatingParticles />
+        <QueryError error={statsError} retry={refetchStats} />
+      </div>
+    );
   }
 
   if (alertsError) {
-    return <QueryError error={alertsError} retry={refetchAlerts} />;
+    return (
+      <div className="relative min-h-screen">
+        <AnimatedGrid />
+        <FloatingParticles />
+        <QueryError error={alertsError} retry={refetchAlerts} />
+      </div>
+    );
   }
 
   const allAlerts = [...realtimeAlerts, ...(recentAlerts ?? [])].slice(0, 5);
 
+  // Loading state with futuristic skeleton
   if (isLoading) {
     return (
       <div className="relative min-h-screen">
         <AnimatedGrid />
         <FloatingParticles />
-        <div className="relative space-y-4 md:space-y-6">
-          <h1 className="text-xl font-bold md:text-2xl">Dashboard</h1>
+        <div className="relative space-y-6">
+          {/* Header skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-xl bg-white/5 animate-pulse" />
+              <div className="h-7 w-40 rounded bg-white/5 animate-pulse" />
+            </div>
+            <div className="flex gap-2">
+              <div className="h-9 w-28 rounded-xl bg-white/5 animate-pulse" />
+              <div className="h-9 w-24 rounded-xl bg-white/5 animate-pulse" />
+            </div>
+          </div>
+
+          {/* Stats skeleton */}
           <div className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl bg-zinc-200/10 dark:bg-zinc-800/50 md:h-28" />
+              <div key={i} className="relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/70 p-5 md:p-6">
+                <div className="flex justify-between mb-3">
+                  <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
+                  <div className="h-4 w-4 bg-white/10 rounded animate-pulse" />
+                </div>
+                <div className="h-8 w-12 bg-white/10 rounded animate-pulse mb-2" />
+                <div className="h-3 w-16 bg-white/10 rounded animate-pulse" />
+              </div>
             ))}
+          </div>
+
+          {/* Bottom panels skeleton */}
+          <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+            <div className="rounded-2xl border border-white/10 bg-zinc-950/70 h-72 animate-pulse" />
+            <div className="rounded-2xl border border-white/10 bg-zinc-950/70 h-72 animate-pulse" />
           </div>
         </div>
       </div>
@@ -76,163 +129,231 @@ export default function DashboardPage() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Background effects */}
+      {/* Layered background effects (on top of layout canvas) */}
       <AnimatedGrid />
       <FloatingParticles />
       
-      <FadeIn className="relative space-y-4 md:space-y-6">
-        {/* Header */}
-        <Flex align="center" justify="between" wrap="wrap" gap="3">
-          <Heading size="5" className="md:text-2xl">
-            <Flex align="center" gap="2">
-              <Zap className="h-5 w-5 text-yellow-400" />
-              Dashboard
-            </Flex>
-          </Heading>
-          <Flex gap="2" className="md:gap-3">
+      <FadeIn className="relative space-y-5 md:space-y-6">
+        {/* Futuristic Page Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
+              <Target className="h-5 w-5 text-cyan-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="text-2xl font-semibold tracking-tight text-white md:text-[28px]">Dashboard</div>
+                <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.02] px-2.5 py-0.5 text-[10px] uppercase tracking-[2px] text-emerald-400/90">
+                  <div className={`h-1.5 w-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`} />
+                  {isConnected ? 'LIVE' : 'OFFLINE'}
+                </div>
+              </div>
+              <div className="text-[10px] text-zinc-500 tracking-[1.5px] -mt-0.5">REAL-TIME FLEET OVERVIEW</div>
+            </div>
+          </div>
+
+          {/* Action Buttons — matching auth neon style */}
+          <div className="flex gap-2 md:gap-3">
             <Link href="/map">
               <NeonGlow color="blue">
-                <Button size="2" className="md:size-3 bg-blue-600 hover:bg-blue-700">
-                  <MapPin className="h-4 w-4 md:mr-2" />
-                  <span className="hidden md:inline">Peta Live</span>
-                </Button>
+                <button className="neon-button group flex h-9 items-center gap-2 rounded-xl border border-cyan-400/30 bg-gradient-to-r from-cyan-500/90 to-blue-600/90 px-4 text-sm font-medium text-white shadow-[0_0_18px_rgba(6,182,212,0.2)] transition active:scale-[0.985]">
+                  <MapPin className="h-4 w-4" />
+                  <span>Peta Live</span>
+                </button>
               </NeonGlow>
             </Link>
             <Link href="/alerts">
-              <Button variant="outline" size="2" className="md:size-3 border-blue-500/50 hover:bg-blue-500/10">
-                <Bell className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Peringatan</span>
-              </Button>
+              <button className="flex h-9 items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-medium text-zinc-200 transition hover:bg-white/10 hover:text-white active:scale-[0.985]">
+                <Bell className="h-4 w-4" />
+                <span>Peringatan</span>
+                {stats?.unreadAlerts ? (
+                  <span className="ml-0.5 rounded-full bg-red-500/90 px-1.5 py-px text-[10px] font-mono tabular-nums text-white">
+                    {stats.unreadAlerts}
+                  </span>
+                ) : null}
+              </button>
             </Link>
-          </Flex>
-        </Flex>
+          </div>
+        </div>
 
-        {/* Stats Cards */}
+        {/* Stats Grid — 4 mission-critical numbers */}
         <StaggerContainer className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
           <StaggerItem>
             <AnimatedBorder>
-              <div className="p-4 md:p-6">
-                <Flex align="center" justify="between" mb="2">
-                  <Text size="1" color="gray">Total Perangkat</Text>
+              <div className="p-4 md:p-5">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">TOTAL PERANGKAT</div>
                   <MapPin className="h-4 w-4 text-blue-400" />
-                </Flex>
-                <Heading size="6" className="md:text-3xl">{stats?.totalDevices ?? 0}</Heading>
-                <Text size="1" color="gray">{onlineCount} online</Text>
+                </div>
+                <div className="font-mono text-4xl font-semibold tracking-tighter text-white md:text-[42px]">
+                  {stats?.totalDevices ?? 0}
+                </div>
+                <div className="mt-1 text-xs text-emerald-400/90">{onlineCount} online • {stats?.idleDevices ?? 0} idle</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
+
           <StaggerItem>
             <AnimatedBorder>
-              <div className="p-4 md:p-6">
-                <Flex align="center" justify="between" mb="2">
-                  <Text size="1" color="gray">Online</Text>
-                  <Wifi className="h-4 w-4 text-green-400" />
-                </Flex>
-                <Heading size="6" className="md:text-3xl text-green-400">{onlineCount}</Heading>
-                <Text size="1" color="gray">{stats?.idleDevices ?? 0} idle</Text>
+              <div className="p-4 md:p-5">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">LIVE / ONLINE</div>
+                  <Wifi className="h-4 w-4 text-emerald-400" />
+                </div>
+                <div className="font-mono text-4xl font-semibold tracking-tighter text-emerald-400 md:text-[42px]">
+                  {onlineCount}
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">{stats?.idleDevices ?? 0} dalam status idle</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
+
           <StaggerItem>
             <AnimatedBorder>
-              <div className="p-4 md:p-6">
-                <Flex align="center" justify="between" mb="2">
-                  <Text size="1" color="gray">Offline</Text>
+              <div className="p-4 md:p-5">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">OFFLINE</div>
                   <WifiOff className="h-4 w-4 text-zinc-400" />
-                </Flex>
-                <Heading size="6" className="md:text-3xl text-zinc-400">{stats?.offlineDevices ?? 0}</Heading>
-                <Text size="1" color="gray">Terputus</Text>
+                </div>
+                <div className="font-mono text-4xl font-semibold tracking-tighter text-zinc-400 md:text-[42px]">
+                  {stats?.offlineDevices ?? 0}
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">Tidak terhubung</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
+
           <StaggerItem>
             <AnimatedBorder>
-              <div className="p-4 md:p-6">
-                <Flex align="center" justify="between" mb="2">
-                  <Text size="1" color="gray">Perjalanan Hari Ini</Text>
-                  <Zap className="h-4 w-4 text-yellow-400" />
-                </Flex>
-                <Heading size="6" className="md:text-3xl text-yellow-400">{stats?.todayTrips ?? 0}</Heading>
-                <Text size="1" color="gray">Perjalanan aktif</Text>
+              <div className="p-4 md:p-5">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">PERJALANAN HARI INI</div>
+                  <TrendingUp className="h-4 w-4 text-yellow-400" />
+                </div>
+                <div className="font-mono text-4xl font-semibold tracking-tighter text-yellow-400 md:text-[42px]">
+                  {stats?.todayTrips ?? 0}
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">Trip aktif tercatat</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
         </StaggerContainer>
 
-        {/* Bottom section */}
+        {/* Bottom panels */}
         <div className="grid gap-4 md:grid-cols-2 md:gap-6">
-          {/* Fleet Status */}
-          <SlideUp delay={0.3}>
+          {/* Fleet Status — terminal style */}
+          <SlideUp delay={0.25}>
             <HolographicCard>
-              <div className="p-4 md:p-6">
-                <Heading size="3" className="md:text-lg mb-3 md:mb-4">
-                  <Flex align="center" gap="2">
+              <div className="p-5 md:p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <Truck className="h-5 w-5 text-blue-400" />
-                    Status Armada
-                  </Flex>
-                </Heading>
-                <Flex direction="column" gap="2" className="md:gap-3">
-                  <Flex align="center" justify="between" className="rounded-lg bg-green-500/10 px-3 py-2 md:px-4 md:py-3 border border-green-500/20">
-                    <Flex align="center" gap="2">
-                      <Activity className="h-4 w-4 text-green-400" />
-                      <Text size="1" className="md:text-sm" weight="medium">Online</Text>
-                    </Flex>
-                    <Heading size="4" className="md:text-2xl text-green-400">{onlineCount}</Heading>
-                  </Flex>
-                  <Flex align="center" justify="between" className="rounded-lg bg-yellow-500/10 px-3 py-2 md:px-4 md:py-3 border border-yellow-500/20">
-                    <Flex align="center" gap="2">
+                    <div>
+                      <div className="text-base font-semibold tracking-tight">Status Armada</div>
+                      <div className="text-[10px] text-zinc-500 -mt-0.5 tracking-[1px]">FLEET HEALTH</div>
+                    </div>
+                  </div>
+                  <div className="font-mono text-xs text-zinc-400 tabular-nums">
+                    {onlineCount + (stats?.idleDevices ?? 0) + (stats?.offlineDevices ?? 0)} TOTAL
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="group flex items-center justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 transition hover:border-emerald-500/40">
+                    <div className="flex items-center gap-2.5">
+                      <Activity className="h-4 w-4 text-emerald-400" />
+                      <div className="text-sm font-medium text-emerald-300">Online</div>
+                    </div>
+                    <div className="font-mono text-2xl font-semibold tabular-nums text-emerald-400">
+                      {onlineCount}
+                    </div>
+                  </div>
+
+                  <div className="group flex items-center justify-between rounded-xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 transition hover:border-yellow-500/40">
+                    <div className="flex items-center gap-2.5">
                       <Truck className="h-4 w-4 text-yellow-400" />
-                      <Text size="1" className="md:text-sm" weight="medium">Idle</Text>
-                    </Flex>
-                    <Heading size="4" className="md:text-2xl text-yellow-400">{stats?.idleDevices ?? 0}</Heading>
-                  </Flex>
-                  <Flex align="center" justify="between" className="rounded-lg bg-zinc-500/10 px-3 py-2 md:px-4 md:py-3 border border-zinc-500/20">
-                    <Flex align="center" gap="2">
+                      <div className="text-sm font-medium text-yellow-300">Idle</div>
+                    </div>
+                    <div className="font-mono text-2xl font-semibold tabular-nums text-yellow-400">
+                      {stats?.idleDevices ?? 0}
+                    </div>
+                  </div>
+
+                  <div className="group flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition hover:border-white/20">
+                    <div className="flex items-center gap-2.5">
                       <WifiOff className="h-4 w-4 text-zinc-400" />
-                      <Text size="1" className="md:text-sm" weight="medium">Offline</Text>
-                    </Flex>
-                    <Heading size="4" className="md:text-2xl text-zinc-400">{stats?.offlineDevices ?? 0}</Heading>
-                  </Flex>
-                </Flex>
+                      <div className="text-sm font-medium text-zinc-300">Offline</div>
+                    </div>
+                    <div className="font-mono text-2xl font-semibold tabular-nums text-zinc-300">
+                      {stats?.offlineDevices ?? 0}
+                    </div>
+                  </div>
+                </div>
               </div>
             </HolographicCard>
           </SlideUp>
 
-          {/* Recent Alerts */}
-          <SlideUp delay={0.4}>
+          {/* Recent Alerts — severity aware */}
+          <SlideUp delay={0.35}>
             <HolographicCard>
-              <div className="p-4 md:p-6">
-                <Flex align="center" justify="between" mb="3" className="md:mb-4">
-                  <Heading size="3" className="md:text-lg">
-                    <Flex align="center" gap="2">
-                      <AlertTriangle className="h-5 w-5 text-yellow-400" />
-                      Peringatan Terbaru
-                    </Flex>
-                  </Heading>
-                  <Link href="/alerts" className="text-xs text-blue-400 hover:text-blue-300 md:text-sm">
+              <div className="p-5 md:p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                    <div>
+                      <div className="text-base font-semibold tracking-tight">Peringatan Terbaru</div>
+                      <div className="text-[10px] text-zinc-500 -mt-0.5 tracking-[1px]">LAST 5 EVENTS</div>
+                    </div>
+                  </div>
+                  <Link 
+                    href="/alerts" 
+                    className="text-xs font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
                     Lihat semua →
                   </Link>
-                </Flex>
+                </div>
+
                 {allAlerts.length > 0 ? (
-                  <Flex direction="column" gap="2">
-                    {allAlerts.map((alert, index) => (
-                      <div key={alert.id ?? index} className="rounded-lg bg-zinc-800/50 p-3 border border-zinc-700/50">
-                        <Flex align="start" gap="2">
-                          <AlertTriangle className="h-4 w-4 text-yellow-400 mt-0.5" />
-                          <Box className="flex-1">
-                            <Text size="2" weight="medium">{alert.message}</Text>
-                            <Text size="1" color="gray" className="mt-1">
-                              {new Date(alert.triggeredAt).toLocaleString('id-ID')}
-                            </Text>
-                          </Box>
-                        </Flex>
-                      </div>
-                    ))}
-                  </Flex>
+                  <div className="space-y-2">
+                    {allAlerts.map((alert, index) => {
+                      const sev = alert.severity || 'INFO';
+                      const accent = severityAccent[sev] || severityAccent.INFO;
+                      const iconColor = severityIconColor[sev] || severityIconColor.INFO;
+
+                      return (
+                        <div 
+                          key={alert.id ?? index} 
+                          className={`group flex items-start gap-3 rounded-xl border ${accent} px-3.5 py-3 transition hover:brightness-110`}
+                        >
+                          <AlertTriangle className={`mt-0.5 h-4 w-4 shrink-0 ${iconColor}`} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 text-sm font-medium leading-snug text-white/95">
+                              {alert.device?.name && (
+                                <span className="font-mono text-[11px] text-white/60 group-hover:text-white/80 transition">
+                                  {alert.device.name}
+                                </span>
+                              )}
+                              <span className="line-clamp-1">{alert.message}</span>
+                            </div>
+                            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-white/50">
+                              <Clock className="h-3 w-3" />
+                              {new Date(alert.triggeredAt).toLocaleString('id-ID', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 ) : (
-                  <Flex align="center" justify="center" className="h-32">
-                    <Text size="2" color="gray">Tidak ada peringatan terbaru</Text>
-                  </Flex>
+                  <div className="flex h-40 flex-col items-center justify-center text-center">
+                    <div className="mb-2 text-zinc-500">Tidak ada peringatan</div>
+                    <div className="text-xs text-zinc-600">Sistem berjalan normal</div>
+                  </div>
                 )}
               </div>
             </HolographicCard>

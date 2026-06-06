@@ -1,44 +1,62 @@
 'use client';
 
 import { FadeIn } from '@/components/ui/animation';
+import { AnimatedGrid, FloatingParticles } from '@/components/ui/futuristic';
 import type { ReactNode } from 'react';
 
 /**
- * Futuristic page wrapper with consistent styling.
- * All dashboard sub-pages use this.
+ * Futuristic page wrapper — consistent mission-control shell for all dashboard pages.
+ * Includes optional layered background effects.
  */
 export function PageWrapper({
   title,
   subtitle,
   actions,
   children,
+  showBackground = true,
 }: {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
+  showBackground?: boolean;
 }) {
   return (
-    <FadeIn className="space-y-6">
-      {/* Page header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-100">{title}</h1>
-          {subtitle && (
-            <p className="mt-1 text-xs text-zinc-600 tracking-wider uppercase">{subtitle}</p>
-          )}
-        </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
-      </div>
+    <div className="relative min-h-[calc(100vh-4rem)]">
+      {showBackground && (
+        <>
+          <AnimatedGrid />
+          <FloatingParticles />
+        </>
+      )}
 
-      {/* Page content */}
-      {children}
-    </FadeIn>
+      <FadeIn className="relative space-y-5 md:space-y-6">
+        {/* Page header — matches polished dashboard/auth style */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
+              <span className="font-mono text-lg font-bold tracking-widest text-cyan-400">TF</span>
+            </div>
+            <div>
+              <div className="text-2xl font-semibold tracking-tight text-white md:text-[26px]">{title}</div>
+              {subtitle && (
+                <div className="text-[10px] text-zinc-500 tracking-[1.5px] -mt-0.5">{subtitle}</div>
+              )}
+            </div>
+          </div>
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
+        </div>
+
+        {/* Page content */}
+        {children}
+      </FadeIn>
+    </div>
   );
 }
 
 /**
- * Futuristic card container — glassmorphism with subtle border glow.
+ * Primary holographic glass card — use for main content blocks.
+ * Matches the style used in dashboard + auth.
  */
 export function CyberCard({
   children,
@@ -51,18 +69,23 @@ export function CyberCard({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-900/60 backdrop-blur-sm ${className}`}
-      style={glow ? { boxShadow: '0 0 30px rgba(6, 182, 212, 0.04)' } : undefined}
+      className={`relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/80 shadow-[0_0_0_1px_rgba(255,255,255,0.03)] backdrop-blur-2xl ${className}`}
     >
-      {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
-      <div className="relative">{children}</div>
+      {/* Holographic gradients */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_15%,rgba(6,182,212,0.06),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_85%,rgba(139,92,246,0.04),transparent_60%)]" />
+      {/* Subtle scanlines */}
+      <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.02)_0px,rgba(255,255,255,0.02)_1px,transparent_1px,transparent_3px)]" />
+
+      <div className={`relative ${glow ? 'shadow-[0_0_40px_rgba(6,182,212,0.06)]' : ''}`}>
+        {children}
+      </div>
     </div>
   );
 }
 
 /**
- * Neon stat card for dashboard metrics.
+ * Neon stat / metric card (reused pattern from polished dashboard).
  */
 export function NeonStat({
   label,
@@ -76,31 +99,52 @@ export function NeonStat({
   color?: 'cyan' | 'green' | 'red' | 'yellow' | 'purple' | 'blue';
 }) {
   const colorMap = {
-    cyan: { text: 'text-cyan-400', glow: 'rgba(6, 182, 212, 0.15)', border: 'border-cyan-500/20' },
-    green: { text: 'text-emerald-400', glow: 'rgba(16, 185, 129, 0.15)', border: 'border-emerald-500/20' },
-    red: { text: 'text-red-400', glow: 'rgba(239, 68, 68, 0.15)', border: 'border-red-500/20' },
-    yellow: { text: 'text-amber-400', glow: 'rgba(245, 158, 11, 0.15)', border: 'border-amber-500/20' },
-    purple: { text: 'text-purple-400', glow: 'rgba(139, 92, 246, 0.15)', border: 'border-purple-500/20' },
-    blue: { text: 'text-blue-400', glow: 'rgba(59, 130, 246, 0.15)', border: 'border-blue-500/20' },
+    cyan: { text: 'text-cyan-400', accent: 'border-cyan-500/20' },
+    green: { text: 'text-emerald-400', accent: 'border-emerald-500/20' },
+    red: { text: 'text-red-400', accent: 'border-red-500/20' },
+    yellow: { text: 'text-yellow-400', accent: 'border-yellow-500/20' },
+    purple: { text: 'text-purple-400', accent: 'border-purple-500/20' },
+    blue: { text: 'text-blue-400', accent: 'border-blue-500/20' },
   };
 
   const c = colorMap[color];
 
   return (
-    <CyberCard glow className="p-5">
+    <CyberCard className="p-4 md:p-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-medium text-zinc-600 uppercase tracking-[2px]">{label}</p>
-          <p className={`mt-2 text-3xl font-bold ${c.text}`}
-            style={{ textShadow: `0 0 20px ${c.glow}` }}
-          >
+          <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">{label}</div>
+          <div className={`mt-1 font-mono text-3xl font-semibold tracking-tighter md:text-[34px] ${c.text}`}>
             {value}
-          </p>
+          </div>
         </div>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${c.border} bg-white/[0.02] ${c.text}`}>
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${c.accent} bg-white/5 ${c.text}`}>
           {icon}
         </div>
       </div>
     </CyberCard>
+  );
+}
+
+/**
+ * Small reusable neon primary button (uses global .neon-button styles).
+ */
+export function NeonButton({
+  children,
+  onClick,
+  disabled,
+  className = '',
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`neon-button group flex h-9 items-center gap-2 rounded-xl border border-cyan-400/30 bg-gradient-to-r from-cyan-500/90 to-blue-600/90 px-4 text-sm font-medium text-white shadow-[0_0_18px_rgba(6,182,212,0.18)] transition active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-70 ${className}`}
+      {...props}
+    >
+      {children}
+      <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+    </button>
   );
 }

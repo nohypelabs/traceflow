@@ -2,25 +2,11 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api-provider';
-import { Button } from '@/components/ui/button';
-import { 
-  FileText, 
-  Download, 
-  Calendar, 
-  TrendingUp, 
-  AlertTriangle, 
-  Truck,
-  BarChart3
-} from 'lucide-react';
+import { FileText, Download, Calendar, TrendingUp, AlertTriangle, Truck, BarChart3 } from 'lucide-react';
 import { FadeIn, SlideUp } from '@/components/ui/animation';
-import { Card, Flex, Box, Heading, Text, Badge, Tabs } from '@radix-ui/themes';
-import { 
-  generateReportSummary, 
-  generateDetailedReport, 
-  exportReportToCSV,
-  getDateRange,
-  type ReportData 
-} from '@/lib/reports';
+import { PageWrapper, CyberCard, NeonButton, NeonStat } from '@/components/ui/page-wrapper';
+import { Button } from '@/components/ui/button';
+import { generateReportSummary, generateDetailedReport, exportReportToCSV, getDateRange, type ReportData } from '@/lib/reports';
 
 type ReportPeriod = 'daily' | 'weekly' | 'monthly';
 
@@ -28,16 +14,11 @@ export default function ReportsPage() {
   const [period, setPeriod] = useState<ReportPeriod>('daily');
   const [dateRange, setDateRange] = useState(getDateRange('daily'));
 
-  // Fetch data for report
   const { data: stats } = api.dashboard.getStats.useQuery();
   const { data: devices } = api.device.list.useQuery();
-  const { data: trips } = api.trip.list.useQuery({
-    from: dateRange.start,
-    to: dateRange.end,
-  });
+  const { data: trips } = api.trip.list.useQuery({ from: dateRange.start, to: dateRange.end });
   const { data: alerts } = api.alert.list.useQuery({ limit: 1000 });
 
-  // Generate report data
   const reportData: ReportData = {
     period,
     startDate: dateRange.start,
@@ -48,239 +29,89 @@ export default function ReportsPage() {
       offlineDevices: stats?.offlineDevices ?? 0,
       idleDevices: stats?.idleDevices ?? 0,
       totalTrips: trips?.length ?? 0,
-      totalDistance: trips?.reduce((sum, trip) => sum + (trip.distance ?? 0), 0) ?? 0,
+      totalDistance: trips?.reduce((sum, t) => sum + (t.distance ?? 0), 0) ?? 0,
       totalAlerts: alerts?.items?.length ?? 0,
-      alertsByType: alerts?.items?.reduce((acc, alert) => {
-        acc[alert.type] = (acc[alert.type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) ?? {},
+      alertsByType: alerts?.items?.reduce((acc, a) => { acc[a.type] = (acc[a.type] || 0) + 1; return acc; }, {} as Record<string, number>) ?? {},
     },
-    devices: devices?.map(device => ({
-      id: device.id,
-      name: device.name,
-      status: device.status,
-      trips: trips?.filter(t => t.deviceId === device.id).length ?? 0,
-      distance: trips?.filter(t => t.deviceId === device.id)
-        .reduce((sum, t) => sum + (t.distance ?? 0), 0) ?? 0,
-      alerts: alerts?.items?.filter(a => a.deviceId === device.id).length ?? 0,
+    devices: devices?.map(d => ({
+      id: d.id, name: d.name, status: d.status,
+      trips: trips?.filter(t => t.deviceId === d.id).length ?? 0,
+      distance: trips?.filter(t => t.deviceId === d.id).reduce((s, t) => s + (t.distance ?? 0), 0) ?? 0,
+      alerts: alerts?.items?.filter(a => a.deviceId === d.id).length ?? 0,
     })) ?? [],
-    topAlerts: Object.entries(
-      alerts?.items?.reduce((acc, alert) => {
-        acc[alert.type] = (acc[alert.type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) ?? {}
-    )
-      .map(([type, count]) => ({
-        type,
-        count,
-        percentage: ((count / (alerts?.items?.length ?? 1)) * 100),
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5),
+    topAlerts: Object.entries((alerts?.items ?? []).reduce((acc, a) => { acc[a.type] = (acc[a.type] || 0) + 1; return acc; }, {} as Record<string, number>))
+      .map(([type, count]) => ({ type, count: count as number, percentage: ((count as number) / ((alerts?.items?.length || 1))) * 100 }))
+      .sort((a, b) => b.count - a.count).slice(0, 5),
   };
 
-  const handlePeriodChange = (newPeriod: ReportPeriod) => {
-    setPeriod(newPeriod);
-    setDateRange(getDateRange(newPeriod));
-  };
-
-  const handleExportSummary = () => {
-    const summary = generateReportSummary(reportData);
-    const blob = new Blob([summary], { type: 'text/plain;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `laporan_${period}_${new Date().toISOString().split('T')[0]}.txt`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
-
-  const handleExportDetailed = () => {
-    const report = generateDetailedReport(reportData);
-    const blob = new Blob([report], { type: 'text/markdown;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `laporan_detail_${period}_${new Date().toISOString().split('T')[0]}.md`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
-
-  const handleExportCSV = () => {
-    exportReportToCSV(reportData);
-  };
+  const handlePeriodChange = (p: ReportPeriod) => { setPeriod(p); setDateRange(getDateRange(p)); };
 
   return (
-    <FadeIn className="space-y-4">
-      <Flex align="center" justify="between">
-        <Heading size="6">Laporan</Heading>
-        <Flex gap="2">
-          <Button variant="outline" onClick={handleExportSummary}>
-            <FileText className="mr-2 h-4 w-4" />
-            Export TXT
-          </Button>
-          <Button variant="outline" onClick={handleExportDetailed}>
-            <FileText className="mr-2 h-4 w-4" />
-            Export MD
-          </Button>
-          <Button variant="outline" onClick={handleExportCSV}>
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-        </Flex>
-      </Flex>
-
-      {/* Period Selection */}
-      <Card className="p-4">
-        <Flex align="center" gap="4">
-          <Text weight="medium">Periode:</Text>
-          <Flex gap="2">
-            <Button
-              variant={period === 'daily' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handlePeriodChange('daily')}
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Harian
+    <PageWrapper title="Laporan" subtitle="ANALYTICS • EXPORTABLE REPORTS">
+      {/* Period selector */}
+      <CyberCard className="p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="text-xs tracking-[1.5px] text-zinc-400 mr-1">PERIODE</div>
+          {(['daily', 'weekly', 'monthly'] as const).map((p) => (
+            <Button key={p} variant={period === p ? 'default' : 'outline'} size="sm" onClick={() => handlePeriodChange(p)} className={period === p ? '' : 'border-white/10'}>
+              <Calendar className="mr-2 h-4 w-4" /> {p === 'daily' ? 'Harian' : p === 'weekly' ? 'Mingguan' : 'Bulanan'}
             </Button>
-            <Button
-              variant={period === 'weekly' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handlePeriodChange('weekly')}
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Mingguan
-            </Button>
-            <Button
-              variant={period === 'monthly' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handlePeriodChange('monthly')}
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Bulanan
-            </Button>
-          </Flex>
-          <Text size="2" color="gray">
-            {dateRange.start.toLocaleDateString('id-ID')} - {dateRange.end.toLocaleDateString('id-ID')}
-          </Text>
-        </Flex>
-      </Card>
+          ))}
+          <div className="ml-auto text-xs text-zinc-500 tabular-nums">
+            {dateRange.start.toLocaleDateString('id-ID')} — {dateRange.end.toLocaleDateString('id-ID')}
+          </div>
+        </div>
+      </CyberCard>
 
-      {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <SlideUp delay={0.1}>
-          <Card className="p-4">
-            <Flex align="center" gap="3">
-              <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900">
-                <Truck className="h-5 w-5 text-blue-600" />
-              </div>
-              <Box>
-                <Text size="1" color="gray">Total Perjalanan</Text>
-                <Heading size="4">{reportData.stats.totalTrips}</Heading>
-              </Box>
-            </Flex>
-          </Card>
-        </SlideUp>
-
-        <SlideUp delay={0.2}>
-          <Card className="p-4">
-            <Flex align="center" gap="3">
-              <div className="rounded-lg bg-green-100 p-2 dark:bg-green-900">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-              </div>
-              <Box>
-                <Text size="1" color="gray">Total Jarak</Text>
-                <Heading size="4">{reportData.stats.totalDistance.toFixed(1)} km</Heading>
-              </Box>
-            </Flex>
-          </Card>
-        </SlideUp>
-
-        <SlideUp delay={0.3}>
-          <Card className="p-4">
-            <Flex align="center" gap="3">
-              <div className="rounded-lg bg-yellow-100 p-2 dark:bg-yellow-900">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              </div>
-              <Box>
-                <Text size="1" color="gray">Total Peringatan</Text>
-                <Heading size="4">{reportData.stats.totalAlerts}</Heading>
-              </Box>
-            </Flex>
-          </Card>
-        </SlideUp>
-
-        <SlideUp delay={0.4}>
-          <Card className="p-4">
-            <Flex align="center" gap="3">
-              <div className="rounded-lg bg-purple-100 p-2 dark:bg-purple-900">
-                <BarChart3 className="h-5 w-5 text-purple-600" />
-              </div>
-              <Box>
-                <Text size="1" color="gray">Perangkat Online</Text>
-                <Heading size="4">{reportData.stats.onlineDevices}</Heading>
-              </Box>
-            </Flex>
-          </Card>
-        </SlideUp>
+      {/* Top Stats */}
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+        <SlideUp delay={0.05}><NeonStat label="TOTAL PERJALANAN" value={reportData.stats.totalTrips} icon={<Truck className="h-5 w-5" />} color="blue" /></SlideUp>
+        <SlideUp delay={0.1}><NeonStat label="TOTAL JARAK" value={`${reportData.stats.totalDistance.toFixed(0)} km`} icon={<TrendingUp className="h-5 w-5" />} color="green" /></SlideUp>
+        <SlideUp delay={0.15}><NeonStat label="TOTAL PERINGATAN" value={reportData.stats.totalAlerts} icon={<AlertTriangle className="h-5 w-5" />} color="yellow" /></SlideUp>
+        <SlideUp delay={0.2}><NeonStat label="PERANGKAT ONLINE" value={reportData.stats.onlineDevices} icon={<BarChart3 className="h-5 w-5" />} color="cyan" /></SlideUp>
       </div>
 
-      {/* Detailed Report */}
+      {/* Export buttons */}
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" onClick={() => { const s = generateReportSummary(reportData); downloadBlob(s, `laporan_${period}.txt`, 'text/plain'); }} className="border-white/15"><FileText className="mr-2 h-4 w-4" /> Export TXT</Button>
+        <Button variant="outline" onClick={() => { const r = generateDetailedReport(reportData); downloadBlob(r, `laporan_detail_${period}.md`, 'text/markdown'); }} className="border-white/15"><FileText className="mr-2 h-4 w-4" /> Export MD</Button>
+        <NeonButton onClick={() => exportReportToCSV(reportData)}><Download className="mr-2 h-4 w-4" /> Export CSV</NeonButton>
+      </div>
+
+      {/* Details */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Top Alerts */}
-        <SlideUp delay={0.5}>
-          <Card className="p-4">
-            <Heading size="3" mb="4">Peringatan Teratas</Heading>
-            {reportData.topAlerts.length > 0 ? (
-              <div className="space-y-3">
-                {reportData.topAlerts.map((alert, index) => (
-                  <Flex key={alert.type} align="center" justify="between">
-                    <Flex align="center" gap="2">
-                      <Badge color="yellow">{index + 1}</Badge>
-                      <Text size="2">{alert.type}</Text>
-                    </Flex>
-                    <Flex align="center" gap="2">
-                      <Text size="2" weight="medium">{alert.count}</Text>
-                      <Text size="1" color="gray">({alert.percentage.toFixed(1)}%)</Text>
-                    </Flex>
-                  </Flex>
-                ))}
-              </div>
-            ) : (
-              <Text color="gray">Tidak ada peringatan</Text>
-            )}
-          </Card>
-        </SlideUp>
+        <CyberCard className="p-5">
+          <div className="mb-4 text-sm font-medium tracking-wider text-zinc-400">PERINGATAN TERATAS</div>
+          {reportData.topAlerts.length ? reportData.topAlerts.map((a, i) => (
+            <div key={i} className="flex items-center justify-between py-1.5 text-sm border-b border-white/5 last:border-0">
+              <span>{a.type}</span>
+              <span className="font-mono text-cyan-400">{a.count} <span className="text-xs text-zinc-500">({a.percentage.toFixed(0)}%)</span></span>
+            </div>
+          )) : <div className="text-sm text-zinc-500">Tidak ada data</div>}
+        </CyberCard>
 
-        {/* Device Summary */}
-        <SlideUp delay={0.6}>
-          <Card className="p-4">
-            <Heading size="3" mb="4">Ringkasan Perangkat</Heading>
-            {reportData.devices.length > 0 ? (
-              <div className="space-y-3">
-                {reportData.devices.slice(0, 5).map((device) => (
-                  <Flex key={device.id} align="center" justify="between">
-                    <Box>
-                      <Text size="2" weight="medium">{device.name}</Text>
-                      <Text size="1" color="gray">{device.status}</Text>
-                    </Box>
-                    <Flex gap="4">
-                      <Box className="text-right">
-                        <Text size="1" color="gray">Perjalanan</Text>
-                        <Text size="2">{device.trips}</Text>
-                      </Box>
-                      <Box className="text-right">
-                        <Text size="1" color="gray">Jarak</Text>
-                        <Text size="2">{device.distance.toFixed(1)} km</Text>
-                      </Box>
-                    </Flex>
-                  </Flex>
-                ))}
+        <CyberCard className="p-5">
+          <div className="mb-4 text-sm font-medium tracking-wider text-zinc-400">RINGKASAN PERANGKAT (TOP 5)</div>
+          {reportData.devices.length ? reportData.devices.slice(0, 5).map((d) => (
+            <div key={d.id} className="flex items-center justify-between py-1.5 text-sm border-b border-white/5 last:border-0">
+              <div>
+                <div>{d.name}</div>
+                <div className="text-[10px] text-zinc-500">{d.status}</div>
               </div>
-            ) : (
-              <Text color="gray">Tidak ada perangkat</Text>
-            )}
-          </Card>
-        </SlideUp>
+              <div className="flex gap-5 text-right font-mono text-xs">
+                <div>{d.trips} trip<br /><span className="text-zinc-500">trips</span></div>
+                <div>{d.distance.toFixed(0)} km<br /><span className="text-zinc-500">jarak</span></div>
+              </div>
+            </div>
+          )) : <div className="text-sm text-zinc-500">Tidak ada data</div>}
+        </CyberCard>
       </div>
-    </FadeIn>
+    </PageWrapper>
   );
+}
+
+function downloadBlob(content: string, filename: string, type: string) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
 }

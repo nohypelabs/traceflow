@@ -56,21 +56,19 @@ export function Sidebar({ collapsed = false, onToggle, onClose }: SidebarProps) 
       />
 
       {/* Logo */}
-      <div className="relative z-10 flex h-14 items-center justify-between border-b border-white/[0.06] px-4">
+      <div className="relative z-10 flex h-14 items-center justify-between border-b border-white/[0.06] bg-black/20 px-4">
         {!collapsed ? (
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative">
-              <MapPin className="h-6 w-6 text-cyan-400 transition-all group-hover:text-cyan-300" />
-              <div className="absolute -inset-1 bg-cyan-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-500/40 bg-cyan-500/10">
+              <MapPin className="h-4.5 w-4.5 text-cyan-400 transition-all group-hover:text-cyan-300" />
             </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              TraceFlow
-            </span>
+            <span className="font-mono text-[15px] font-semibold tracking-[3px] text-white">TRACEFLOW</span>
           </Link>
         ) : (
-          <Link href="/" className="mx-auto group relative">
-            <MapPin className="h-6 w-6 text-cyan-400" />
-            <div className="absolute -inset-1 bg-cyan-500/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Link href="/" className="mx-auto group">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-500/40 bg-cyan-500/10">
+              <MapPin className="h-4 w-4 text-cyan-400" />
+            </div>
           </Link>
         )}
         {onClose && (

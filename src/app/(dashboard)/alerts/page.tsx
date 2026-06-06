@@ -2,13 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api-provider';
-import { Button } from '@/components/ui/button';
 import { Bell, BellOff, Check, Trash2, Filter, AlertTriangle, AlertCircle, Info, Download } from 'lucide-react';
 import { useSocket } from '@/hooks/use-socket';
 import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from '@/components/ui/animation';
-import { Card, Flex, Box, Heading, Text, Badge } from '@radix-ui/themes';
+import { PageWrapper, CyberCard, NeonButton } from '@/components/ui/page-wrapper';
+import { Button } from '@/components/ui/button';
 import type { AlertWithDevice } from '@/types';
 import { exportAlertsToCSV } from '@/lib/export';
+
+const severityAccent: Record<string, string> = {
+  CRITICAL: 'border-red-500/50 bg-red-500/10',
+  WARNING: 'border-yellow-500/50 bg-yellow-500/10',
+  INFO: 'border-cyan-500/50 bg-cyan-500/10',
+};
 
 export default function AlertsPage() {
   const { data: alerts, isLoading } = api.alert.list.useQuery({ limit: 50 });
@@ -19,13 +25,10 @@ export default function AlertsPage() {
 
   useEffect(() => {
     if (!socket) return;
-
     const handleNewAlert = (alert: AlertWithDevice) => {
       setRealtimeAlerts((prev) => [alert, ...prev.slice(0, 49)]);
     };
-
     socket.on('alert:new', handleNewAlert);
-
     return () => {
       socket.off('alert:new', handleNewAlert);
     };
@@ -41,195 +44,127 @@ export default function AlertsPage() {
 
   const unreadCount = allAlerts.filter((a) => !a.isRead).length;
 
+  const actions = (
+    <div className="flex gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => exportAlertsToCSV(filteredAlerts)}
+        disabled={filteredAlerts.length === 0}
+        className="border-white/15 bg-white/5"
+      >
+        <Download className="h-4 w-4 md:mr-2" />
+        <span className="hidden md:inline">Export CSV</span>
+      </Button>
+      <Button
+        variant={showUnreadOnly ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+        className="border-white/15"
+      >
+        {showUnreadOnly ? <Bell className="mr-2 h-4 w-4" /> : <BellOff className="mr-2 h-4 w-4" />}
+        Belum Dibaca {unreadCount > 0 && `(${unreadCount})`}
+      </Button>
+    </div>
+  );
+
   return (
-    <FadeIn className="space-y-4">
-      <Flex align="center" justify="between">
-        <Flex align="center" gap="2">
-          <Heading size="6">Peringatan</Heading>
-          {unreadCount > 0 && (
-            <Badge color="red">{unreadCount}</Badge>
-          )}
-        </Flex>
-        <Flex gap="2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => exportAlertsToCSV(filteredAlerts)}
-            disabled={filteredAlerts.length === 0}
-          >
-            <Download className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Export CSV</span>
-          </Button>
-          <Button
-            variant={showUnreadOnly ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setShowUnreadOnly(!showUnreadOnly)}
-          >
-            {showUnreadOnly ? <Bell className="mr-2 h-4 w-4" /> : <BellOff className="mr-2 h-4 w-4" />}
-            Belum Dibaca
-          </Button>
-        </Flex>
-      </Flex>
-
+    <PageWrapper
+      title="Peringatan"
+      subtitle="REAL-TIME ALERTS • GEOFENCE • SPEED • SOS"
+      actions={actions}
+    >
       {/* Filters */}
-      <SlideUp delay={0.1}>
-        <Card className="p-4">
-          <Flex wrap="wrap" gap="2">
-            <FilterButton
-              active={filter === 'all'}
-              onClick={() => setFilter('all')}
-              icon={<Filter className="h-4 w-4" />}
-            >
-              Semua
-            </FilterButton>
-            <FilterButton
-              active={filter === 'SPEEDING'}
-              onClick={() => setFilter('SPEEDING')}
-              icon={<AlertTriangle className="h-4 w-4 text-orange-500" />}
-            >
-              Kecepatan
-            </FilterButton>
-            <FilterButton
-              active={filter === 'GEOFENCE_ENTER'}
-              onClick={() => setFilter('GEOFENCE_ENTER')}
-              icon={<AlertCircle className="h-4 w-4 text-blue-500" />}
-            >
-              Masuk Geofence
-            </FilterButton>
-            <FilterButton
-              active={filter === 'GEOFENCE_EXIT'}
-              onClick={() => setFilter('GEOFENCE_EXIT')}
-              icon={<AlertCircle className="h-4 w-4 text-purple-500" />}
-            >
-              Keluar Geofence
-            </FilterButton>
-            <FilterButton
-              active={filter === 'SOS'}
-              onClick={() => setFilter('SOS')}
-              icon={<AlertTriangle className="h-4 w-4 text-red-500" />}
-            >
-              SOS
-            </FilterButton>
-          </Flex>
-        </Card>
-      </SlideUp>
+      <CyberCard className="p-4">
+        <div className="flex flex-wrap gap-2">
+          <FilterButton active={filter === 'all'} onClick={() => setFilter('all')} icon={<Filter className="h-4 w-4" />}>Semua</FilterButton>
+          <FilterButton active={filter === 'SPEEDING'} onClick={() => setFilter('SPEEDING')} icon={<AlertTriangle className="h-4 w-4 text-orange-400" />}>Kecepatan</FilterButton>
+          <FilterButton active={filter === 'GEOFENCE_ENTER'} onClick={() => setFilter('GEOFENCE_ENTER')} icon={<AlertCircle className="h-4 w-4 text-blue-400" />}>Masuk Geofence</FilterButton>
+          <FilterButton active={filter === 'GEOFENCE_EXIT'} onClick={() => setFilter('GEOFENCE_EXIT')} icon={<AlertCircle className="h-4 w-4 text-purple-400" />}>Keluar Geofence</FilterButton>
+          <FilterButton active={filter === 'SOS'} onClick={() => setFilter('SOS')} icon={<AlertTriangle className="h-4 w-4 text-red-400" />}>SOS</FilterButton>
+        </div>
+      </CyberCard>
 
-      {/* Alert List */}
-      <SlideUp delay={0.2}>
-        <Card>
-          {isLoading ? (
-            <div className="p-6">
-              <div className="animate-pulse space-y-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-20 rounded-lg bg-zinc-200 dark:bg-zinc-800" />
-                ))}
-              </div>
-            </div>
-          ) : filteredAlerts.length > 0 ? (
-            <div className="divide-y">
-              <StaggerContainer>
-                {filteredAlerts.map((alert) => (
-                  <StaggerItem key={alert.id}>
-                    <AlertRow alert={alert} />
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-            </div>
-          ) : (
-            <Flex direction="column" align="center" justify="center" className="h-64">
-              <Bell className="h-12 w-12 text-zinc-400" />
-              <Text color="gray" mt="2">Tidak ada peringatan</Text>
-              <Text size="1" color="gray">
-                {showUnreadOnly ? 'Semua peringatan sudah dibaca' : 'Tidak ada peringatan yang sesuai filter'}
-              </Text>
-            </Flex>
-          )}
-        </Card>
-      </SlideUp>
-    </FadeIn>
+      {/* Alerts List */}
+      <CyberCard>
+        {isLoading ? (
+          <div className="p-6 space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />)}
+          </div>
+        ) : filteredAlerts.length > 0 ? (
+          <div className="divide-y divide-white/5">
+            <StaggerContainer>
+              {filteredAlerts.map((alert) => (
+                <StaggerItem key={alert.id}>
+                  <AlertRow alert={alert} />
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </div>
+        ) : (
+          <div className="flex h-64 flex-col items-center justify-center text-center">
+            <Bell className="mb-3 h-10 w-10 text-zinc-600" />
+            <div className="text-sm text-zinc-400">Tidak ada peringatan yang sesuai</div>
+          </div>
+        )}
+      </CyberCard>
+    </PageWrapper>
   );
 }
 
-function FilterButton({
-  active,
-  onClick,
-  icon,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function FilterButton({ active, onClick, icon, children }: any) {
   return (
     <Button
       variant={active ? 'default' : 'outline'}
       size="sm"
       onClick={onClick}
+      className={active ? '' : 'border-white/10 bg-white/5'}
     >
-      {icon}
-      <span className="ml-1">{children}</span>
+      {icon}<span className="ml-1.5">{children}</span>
     </Button>
   );
 }
 
 function AlertRow({ alert }: { alert: AlertWithDevice }) {
   const utils = api.useUtils();
-  const markReadMutation = api.alert.markRead.useMutation({
-    onSuccess: () => utils.alert.list.invalidate(),
-  });
-  const deleteMutation = api.alert.delete.useMutation({
-    onSuccess: () => utils.alert.list.invalidate(),
-  });
+  const markReadMutation = api.alert.markRead.useMutation({ onSuccess: () => utils.alert.list.invalidate() });
+  const deleteMutation = api.alert.delete.useMutation({ onSuccess: () => utils.alert.list.invalidate() });
 
-  const severityColors: Record<string, 'blue' | 'yellow' | 'red'> = {
-    INFO: 'blue',
-    WARNING: 'yellow',
-    CRITICAL: 'red',
-  };
+  const sev = alert.severity || 'INFO';
+  const accent = severityAccent[sev] || severityAccent.INFO;
 
-  const typeIcons: Record<string, React.ReactNode> = {
-    SPEEDING: <AlertTriangle className="h-5 w-5 text-orange-500" />,
-    GEOFENCE_ENTER: <AlertCircle className="h-5 w-5 text-blue-500" />,
-    GEOFENCE_EXIT: <AlertCircle className="h-5 w-5 text-purple-500" />,
-    SOS: <AlertTriangle className="h-5 w-5 text-red-500" />,
-    IGNITION_ON: <Info className="h-5 w-5 text-green-500" />,
-    IGNITION_OFF: <Info className="h-5 w-5 text-zinc-500" />,
-  };
+  const typeIcon = {
+    SPEEDING: <AlertTriangle className="h-4 w-4 text-orange-400" />,
+    GEOFENCE_ENTER: <AlertCircle className="h-4 w-4 text-blue-400" />,
+    GEOFENCE_EXIT: <AlertCircle className="h-4 w-4 text-purple-400" />,
+    SOS: <AlertTriangle className="h-4 w-4 text-red-400" />,
+  }[alert.type] || <Info className="h-4 w-4 text-zinc-400" />;
 
   return (
-    <Flex align="start" gap="4" p="4" className={!alert.isRead ? 'bg-blue-50 dark:bg-blue-950' : ''}>
-      <Box className="mt-1">{typeIcons[alert.type] ?? <Bell className="h-5 w-5" />}</Box>
-      <Box className="flex-1">
-        <Flex align="center" gap="2">
-          <Text weight="medium">{alert.message}</Text>
-          <Badge color={severityColors[alert.severity] ?? 'blue'}>
-            {alert.severity}
-          </Badge>
-        </Flex>
-        <Flex align="center" gap="4" mt="1">
-          {alert.device && <Text size="1" color="gray">{alert.device.name}</Text>}
-          <Text size="1" color="gray">{new Date(alert.triggeredAt).toLocaleString('id-ID')}</Text>
-        </Flex>
-      </Box>
-      <Flex gap="2">
+    <div className={`flex items-start gap-4 p-4 transition ${!alert.isRead ? accent : 'hover:bg-white/5'}`}>
+      <div className="mt-0.5">{typeIcon}</div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="font-medium text-white/95">{alert.message}</span>
+          <span className={`rounded px-1.5 py-px text-[10px] font-mono tracking-wider ${sev === 'CRITICAL' ? 'bg-red-500/20 text-red-400' : sev === 'WARNING' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-cyan-500/20 text-cyan-400'}`}>
+            {sev}
+          </span>
+        </div>
+        <div className="mt-1 flex items-center gap-3 text-xs text-white/50">
+          {alert.device?.name && <span className="font-mono text-cyan-400/70">{alert.device.name}</span>}
+          <span>{new Date(alert.triggeredAt).toLocaleString('id-ID')}</span>
+        </div>
+      </div>
+      <div className="flex shrink-0 gap-1.5">
         {!alert.isRead && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => markReadMutation.mutate({ id: alert.id })}
-          >
-            <Check className="h-4 w-4" />
+          <Button variant="outline" size="sm" className="h-8 border-white/10" onClick={() => markReadMutation.mutate({ id: alert.id })}>
+            <Check className="h-3.5 w-3.5" />
           </Button>
         )}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => deleteMutation.mutate({ id: alert.id })}
-        >
-          <Trash2 className="h-4 w-4 text-red-500" />
+        <Button variant="outline" size="sm" className="h-8 border-white/10" onClick={() => deleteMutation.mutate({ id: alert.id })}>
+          <Trash2 className="h-3.5 w-3.5 text-red-400" />
         </Button>
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   );
 }
