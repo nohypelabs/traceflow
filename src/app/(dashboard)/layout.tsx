@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GpsNetworkBackground } from '@/components/ui/gps-network-bg';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
@@ -20,26 +21,52 @@ export default function DashboardLayout({
       {/* Animated GPS Network Background */}
       <GpsNetworkBackground />
 
-      {/* Mobile overlay */}
-      {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 z-40 md:hidden" 
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div 
-        className={`relative z-50 flex h-screen flex-col transition-all duration-300 md:relative md:flex ${
-          mobileMenuOpen ? 'fixed inset-y-0 left-0 w-64' : 'hidden'
-        } md:block ${sidebarCollapsed ? 'md:w-16' : 'md:w-64'}`}
-      >
-        <Sidebar 
-          collapsed={sidebarCollapsed && !mobileMenuOpen} 
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
-          onClose={() => setMobileMenuOpen(false)} 
-        />
+      {/* Desktop Sidebar with Framer Motion width animation */}
+      <div className="hidden md:block relative z-10">
+        <motion.div
+          className="flex h-screen flex-col overflow-hidden border-r border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl"
+          animate={{ width: sidebarCollapsed ? 64 : 256 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        >
+          <Sidebar 
+            collapsed={sidebarCollapsed} 
+            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
+            onClose={() => setMobileMenuOpen(false)} 
+          />
+        </motion.div>
       </div>
+
+      {/* Mobile Sidebar with Framer Motion slide + overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div 
+              className="fixed inset-0 bg-black/60 z-40 md:hidden" 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileMenuOpen(false)}
+            />
+
+            {/* Sidebar panel */}
+            <motion.div 
+              className="fixed inset-y-0 left-0 w-64 z-50 flex h-screen flex-col border-r border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl md:hidden"
+              initial={{ x: -256 }}
+              animate={{ x: 0 }}
+              exit={{ x: -256 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <Sidebar 
+                collapsed={false} 
+                onToggle={() => {}} 
+                onClose={() => setMobileMenuOpen(false)} 
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Main content */}
       <div className="relative z-10 flex flex-1 flex-col overflow-hidden">

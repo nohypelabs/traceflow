@@ -219,10 +219,12 @@ export default function DashboardPage() {
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-white md:text-[36px]">
                   28
                 </div>
-                <div className="mt-2 flex gap-2 text-[10px]">
-                  <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400">21 online</span>
-                  <span className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-yellow-400">5 idle</span>
-                  <span className="rounded bg-zinc-500/10 px-1.5 py-0.5 text-zinc-400">2 off</span>
+                <div className="mt-2 h-8 flex items-center">
+                  <div className="flex gap-2 text-[10px]">
+                    <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400">21 online</span>
+                    <span className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-yellow-400">5 idle</span>
+                    <span className="rounded bg-zinc-500/10 px-1.5 py-0.5 text-zinc-400">2 off</span>
+                  </div>
                 </div>
                 <div className="mt-1 text-xs text-emerald-400/80">+3 minggu ini</div>
               </div>
@@ -241,8 +243,10 @@ export default function DashboardPage() {
                   21
                   <span className="text-base text-zinc-500 ml-1">/ 28</span>
                 </div>
-                <div className="mt-2 h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                  <div className="h-full w-[75%] rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" />
+                <div className="mt-2 h-8 flex items-center">
+                  <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                    <div className="h-full w-[75%] rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" />
+                  </div>
                 </div>
                 <div className="mt-1 text-xs text-emerald-400/80">75% aktif • 3 idle</div>
               </div>
@@ -260,10 +264,12 @@ export default function DashboardPage() {
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-zinc-400 md:text-[36px]">
                   2
                 </div>
-                <div className="mt-2 flex gap-1 text-[10px]">
-                  {['TRK-07', 'MTR-12'].map((id, i) => (
-                    <span key={i} className="rounded bg-zinc-500/10 px-1.5 py-0.5 text-zinc-400">{id}</span>
-                  ))}
+                <div className="mt-2 h-8 flex items-center">
+                  <div className="flex gap-1 text-[10px]">
+                    {['TRK-07', 'MTR-12'].map((id, i) => (
+                      <span key={i} className="rounded bg-zinc-500/10 px-1.5 py-0.5 text-zinc-400">{id}</span>
+                    ))}
+                  </div>
                 </div>
                 <div className="mt-1 text-xs text-zinc-500">Terakhir: 47 menit lalu</div>
               </div>
@@ -282,10 +288,12 @@ export default function DashboardPage() {
                   47
                 </div>
                 {/* Mini sparkline */}
-                <div className="mt-2 flex items-end gap-[3px] h-6">
-                  {[4, 6, 5, 8, 7, 9, 11, 10, 8, 12, 9, 7, 10].map((h, i) => (
-                    <div key={i} className="flex-1 rounded-sm bg-yellow-500/30" style={{ height: `${(h / 12) * 100}%` }} />
-                  ))}
+                <div className="mt-2 h-8 flex items-end">
+                  <div className="flex items-end gap-[3px] w-full h-6">
+                    {[4, 6, 5, 8, 7, 9, 11, 10, 8, 12, 9, 7, 10].map((h, i) => (
+                      <div key={i} className="flex-1 rounded-sm bg-yellow-500/30" style={{ height: `${(h / 12) * 100}%` }} />
+                    ))}
+                  </div>
                 </div>
                 <div className="mt-1 text-xs text-emerald-400/80">↑ 8 trip vs kemarin</div>
               </div>
@@ -309,11 +317,13 @@ export default function DashboardPage() {
                   253.7
                   <span className="text-base text-zinc-500 ml-1">km</span>
                 </div>
-                {/* Mini sparkline */}
-                <div className="mt-2 flex items-end gap-[3px] h-6">
-                  {[3, 5, 4, 6, 8, 10, 9, 7, 6, 8, 11, 10, 8].map((h, i) => (
-                    <div key={i} className="flex-1 rounded-sm bg-cyan-500/30" style={{ height: `${(h / 11) * 100}%` }} />
-                  ))}
+                {/* Mini sparkline - consistent visual height */}
+                <div className="mt-2 h-8 flex items-end">
+                  <div className="flex items-end gap-[3px] w-full h-6">
+                    {[3, 5, 4, 6, 8, 10, 9, 7, 6, 8, 11, 10, 8].map((h, i) => (
+                      <div key={i} className="flex-1 rounded-sm bg-cyan-500/30" style={{ height: `${(h / 11) * 100}%` }} />
+                    ))}
+                  </div>
                 </div>
                 <div className="mt-1 text-xs text-emerald-400/80">↑ 12% vs kemarin</div>
               </div>
@@ -334,9 +344,11 @@ export default function DashboardPage() {
                   38
                   <span className="text-base text-zinc-500 ml-1">km/h</span>
                 </div>
-                {/* Speed gauge bar */}
-                <div className="mt-2 h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                  <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-400" style={{ width: '48%' }} />
+                {/* Speed gauge bar - consistent visual height */}
+                <div className="mt-2 h-8 flex items-center">
+                  <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-400" style={{ width: '48%' }} />
+                  </div>
                 </div>
                 <div className="mt-1 text-xs text-zinc-500">Max: 82 km/h</div>
               </div>
@@ -357,11 +369,13 @@ export default function DashboardPage() {
                   67
                   <span className="text-base text-zinc-500 ml-1">%</span>
                 </div>
-                {/* Progress dots */}
-                <div className="mt-2 flex gap-1">
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <div key={i} className={`h-2 flex-1 rounded-sm ${i < 8 ? 'bg-emerald-500/40' : 'bg-white/[0.06]'}`} />
-                  ))}
+                {/* Progress dots - consistent visual height */}
+                <div className="mt-2 h-8 flex items-center">
+                  <div className="flex gap-1 w-full">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div key={i} className={`h-2 flex-1 rounded-sm ${i < 8 ? 'bg-emerald-500/40' : 'bg-white/[0.06]'}`} />
+                    ))}
+                  </div>
                 </div>
                 <div className="mt-1 text-xs text-zinc-500">8 dari 12 aktif</div>
               </div>
@@ -382,13 +396,15 @@ export default function DashboardPage() {
                   5
                   <span className="text-base text-zinc-500 ml-1">zona</span>
                 </div>
-                {/* Geofence hex indicators */}
-                <div className="mt-2 flex gap-2">
-                  {['Gudang', 'Rute A', 'Area JKT', 'Pool', 'Client'].map((name, i) => (
-                    <div key={i} className="flex h-6 items-center justify-center rounded-md border border-amber-500/20 bg-amber-500/10 px-1.5">
-                      <span className="text-[8px] text-amber-400/80 truncate max-w-[48px]">{name}</span>
-                    </div>
-                  ))}
+                {/* Geofence hex indicators - consistent visual height + wrap for mobile */}
+                <div className="mt-2 h-8 flex items-center">
+                  <div className="flex flex-wrap gap-1 w-full">
+                    {['Gudang', 'Rute A', 'Area JKT', 'Pool', 'Client'].map((name, i) => (
+                      <div key={i} className="flex h-6 items-center justify-center rounded-md border border-amber-500/20 bg-amber-500/10 px-1.5">
+                        <span className="text-[8px] text-amber-400/80 truncate max-w-[48px]">{name}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="mt-1 text-xs text-zinc-500">3 perangkat terlacak</div>
               </div>
