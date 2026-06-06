@@ -12,7 +12,22 @@ import { Button } from '@/components/ui/button';
 import { exportDevicesToCSV } from '@/lib/export';
 
 export default function DevicesPage() {
-  const { data: devices, isLoading } = api.device.list.useQuery();
+  // Rich, realistic mock data for demo (structured exactly like real Prisma/Device model — easy to swap later)
+  const [devices, setDevices] = useState<Device[]>([
+    { id: 'd1', name: 'Truk Armada-07', imei: '867530912345678', provider: 'MOCK', vehiclePlate: 'B 1234 ABC', vehicleType: 'TRUCK', status: 'ONLINE', lastLatitude: -6.2088, lastLongitude: 106.8456, lastSpeed: 48, lastHeading: 270, lastIgnition: true, lastSeenAt: new Date(Date.now() - 1000 * 12), createdAt: new Date('2024-11-01') },
+    { id: 'd2', name: 'Mobil Ops #12', imei: '867530912345679', provider: 'MOCK', vehiclePlate: 'B 5678 DEF', vehicleType: 'CAR', status: 'ONLINE', lastLatitude: -6.175, lastLongitude: 106.865, lastSpeed: 62, lastHeading: 180, lastIgnition: true, lastSeenAt: new Date(Date.now() - 1000 * 8), createdAt: new Date('2024-11-05') },
+    { id: 'd3', name: 'Motor Kurir-03', imei: '867530912345680', provider: 'MOCK', vehiclePlate: 'B 9012 GHI', vehicleType: 'MOTORCYCLE', status: 'ONLINE', lastLatitude: -6.22, lastLongitude: 106.81, lastSpeed: 31, lastHeading: 90, lastIgnition: true, lastSeenAt: new Date(Date.now() - 1000 * 3), createdAt: new Date('2024-10-20') },
+    { id: 'd4', name: 'Van Logistik-09', imei: '867530912345681', provider: 'MOCK', vehiclePlate: 'B 3456 JKL', vehicleType: 'VAN', status: 'IDLE', lastLatitude: -6.19, lastLongitude: 106.83, lastSpeed: 0, lastHeading: 0, lastIgnition: false, lastSeenAt: new Date(Date.now() - 1000 * 60 * 4), createdAt: new Date('2024-11-10') },
+    { id: 'd5', name: 'Truk B-15', imei: '867530912345682', provider: 'MOCK', vehiclePlate: 'B 7890 MNO', vehicleType: 'TRUCK', status: 'OFFLINE', lastLatitude: -6.25, lastLongitude: 106.79, lastSpeed: 0, lastHeading: 0, lastIgnition: false, lastSeenAt: new Date(Date.now() - 1000 * 60 * 47), createdAt: new Date('2024-09-15') },
+    { id: 'd6', name: 'Mobil #5', imei: '867530912345683', provider: 'MOCK', vehiclePlate: 'B 2345 PQR', vehicleType: 'CAR', status: 'ONLINE', lastLatitude: -6.18, lastLongitude: 106.87, lastSpeed: 55, lastHeading: 45, lastIgnition: true, lastSeenAt: new Date(Date.now() - 1000 * 19), createdAt: new Date('2024-11-12') },
+    { id: 'd7', name: 'Truk C-22', imei: '867530912345684', provider: 'MOCK', vehiclePlate: 'B 6789 STU', vehicleType: 'TRUCK', status: 'IDLE', lastLatitude: -6.21, lastLongitude: 106.82, lastSpeed: 0, lastHeading: 0, lastIgnition: false, lastSeenAt: new Date(Date.now() - 1000 * 60 * 11), createdAt: new Date('2024-10-28') },
+    { id: 'd8', name: 'Ambulance Support', imei: '867530912345685', provider: 'MOCK', vehiclePlate: 'B 1122 VWX', vehicleType: 'VAN', status: 'ONLINE', lastLatitude: -6.205, lastLongitude: 106.85, lastSpeed: 72, lastHeading: 315, lastIgnition: true, lastSeenAt: new Date(Date.now() - 1000 * 25), createdAt: new Date('2024-11-08') },
+    { id: 'd9', name: 'Forklift Yard-01', imei: '867530912345686', provider: 'MOCK', vehiclePlate: null, vehicleType: 'OTHER', status: 'OFFLINE', lastLatitude: -6.23, lastLongitude: 106.80, lastSpeed: 0, lastHeading: 0, lastIgnition: false, lastSeenAt: new Date(Date.now() - 1000 * 60 * 90), createdAt: new Date('2024-08-10') },
+    { id: 'd10', name: 'Bus Sekolah-03', imei: '867530912345687', provider: 'MOCK', vehiclePlate: 'B 4455 YZ', vehicleType: 'BUS', status: 'ONLINE', lastLatitude: -6.17, lastLongitude: 106.88, lastSpeed: 42, lastHeading: 135, lastIgnition: true, lastSeenAt: new Date(Date.now() - 1000 * 55), createdAt: new Date('2024-11-15') },
+    { id: 'd11', name: 'Pickup Delivery', imei: '867530912345688', provider: 'MOCK', vehiclePlate: 'B 7788 AA', vehicleType: 'CAR', status: 'IDLE', lastLatitude: -6.24, lastLongitude: 106.84, lastSpeed: 0, lastHeading: 0, lastIgnition: false, lastSeenAt: new Date(Date.now() - 1000 * 60 * 18), createdAt: new Date('2024-11-03') },
+    { id: 'd12', name: 'Truk Tanker-11', imei: '867530912345689', provider: 'MOCK', vehiclePlate: 'B 9900 BB', vehicleType: 'TRUCK', status: 'ONLINE', lastLatitude: -6.195, lastLongitude: 106.81, lastSpeed: 35, lastHeading: 225, lastIgnition: true, lastSeenAt: new Date(Date.now() - 1000 * 7), createdAt: new Date('2024-10-22') },
+  ]);
+
   const [showCreate, setShowCreate] = useState(false);
 
   const primaryAction = (
@@ -20,8 +35,8 @@ export default function DevicesPage() {
       <Button
         variant="outline"
         size="default"
-        onClick={() => devices && exportDevicesToCSV(devices)}
-        disabled={!devices || devices.length === 0}
+        onClick={() => exportDevicesToCSV(devices)}
+        disabled={devices.length === 0}
         className="border-white/15 bg-white/5 hover:bg-white/10"
       >
         <Download className="h-4 w-4 md:mr-2" />
@@ -34,6 +49,32 @@ export default function DevicesPage() {
     </div>
   );
 
+  // Demo: actually add to the list (simulates real create + invalidate)
+  const handleDemoCreate = (newDevice: Partial<Device>) => {
+    const device: Device = {
+      id: 'd' + (Date.now()),
+      name: newDevice.name || 'Demo Device',
+      imei: newDevice.imei || '8675309' + Math.floor(Math.random() * 1000000),
+      provider: 'MOCK',
+      vehiclePlate: newDevice.vehiclePlate || null,
+      vehicleType: newDevice.vehicleType || 'CAR',
+      status: 'IDLE',
+      lastLatitude: null,
+      lastLongitude: null,
+      lastSpeed: null,
+      lastHeading: null,
+      lastIgnition: false,
+      lastSeenAt: null,
+      createdAt: new Date(),
+    };
+    setDevices(prev => [device, ...prev]);
+    setShowCreate(false);
+  };
+
+  const handleDemoDelete = (id: string) => {
+    setDevices(prev => prev.filter(d => d.id !== id));
+  };
+
   return (
     <PageWrapper
       title="Perangkat"
@@ -41,21 +82,15 @@ export default function DevicesPage() {
       actions={primaryAction}
     >
       <AnimatedPresence show={showCreate}>
-        <CreateDeviceForm onClose={() => setShowCreate(false)} />
+        <CreateDeviceForm onClose={() => setShowCreate(false)} onCreate={handleDemoCreate} />
       </AnimatedPresence>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-20 animate-pulse rounded-2xl border border-white/10 bg-zinc-950/70" />
-          ))}
-        </div>
-      ) : devices && devices.length > 0 ? (
+      {devices.length > 0 ? (
         <>
           {/* Mobile Cards */}
           <div className="space-y-3 md:hidden">
             {devices.map((device) => (
-              <MobileDeviceCard key={device.id} device={device} />
+              <MobileDeviceCard key={device.id} device={device} onDelete={handleDemoDelete} />
             ))}
           </div>
 
@@ -75,7 +110,7 @@ export default function DevicesPage() {
                 </thead>
                 <tbody className="divide-y divide-white/5 text-sm">
                   {devices.map((device) => (
-                    <DesktopDeviceRow key={device.id} device={device} />
+                    <DesktopDeviceRow key={device.id} device={device} onDelete={handleDemoDelete} />
                   ))}
                 </tbody>
               </table>
@@ -98,13 +133,8 @@ export default function DevicesPage() {
   );
 }
 
-// Mobile Card
-function MobileDeviceCard({ device }: { device: Device }) {
-  const utils = api.useUtils();
-  const deleteMutation = api.device.delete.useMutation({
-    onSuccess: () => utils.device.list.invalidate(),
-  });
-
+// Mobile Card (demo: uses local state delete)
+function MobileDeviceCard({ device, onDelete }: { device: Device; onDelete: (id: string) => void }) {
   return (
     <CyberCard className="p-4">
       <div className="flex items-start justify-between">
@@ -120,25 +150,20 @@ function MobileDeviceCard({ device }: { device: Device }) {
         </div>
         <div className="flex gap-1">
           <Button variant="ghost" size="sm"><Pencil className="h-3.5 w-3.5" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => deleteMutation.mutate({ id: device.id })}>
+          <Button variant="ghost" size="sm" onClick={() => onDelete(device.id)}>
             <Trash2 className="h-3.5 w-3.5 text-red-400" />
           </Button>
         </div>
       </div>
       <div className="mt-3 text-xs text-zinc-500">
-        {device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString('id-ID') : 'Belum pernah terlihat'}
+        {device.lastSeenAt ? device.lastSeenAt.toLocaleString('id-ID') : 'Belum pernah terlihat'}
       </div>
     </CyberCard>
   );
 }
 
-// Desktop Row
-function DesktopDeviceRow({ device }: { device: Device }) {
-  const utils = api.useUtils();
-  const deleteMutation = api.device.delete.useMutation({
-    onSuccess: () => utils.device.list.invalidate(),
-  });
-
+// Desktop Row (demo: local delete)
+function DesktopDeviceRow({ device, onDelete }: { device: Device; onDelete: (id: string) => void }) {
   return (
     <tr className="hover:bg-white/5 transition-colors">
       <td className="px-5 py-3.5"><DeviceStatusBadge status={device.status} /></td>
@@ -150,12 +175,12 @@ function DesktopDeviceRow({ device }: { device: Device }) {
         ) : '—'}
       </td>
       <td className="px-5 py-3.5 text-xs text-zinc-500">
-        {device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString('id-ID') : '—'}
+        {device.lastSeenAt ? device.lastSeenAt.toLocaleString('id-ID') : '—'}
       </td>
       <td className="px-5 py-3.5">
         <div className="flex justify-end gap-2">
           <Button variant="outline" size="sm" className="h-8 border-white/10"><Pencil className="h-3.5 w-3.5" /></Button>
-          <Button variant="outline" size="sm" className="h-8 border-white/10" onClick={() => deleteMutation.mutate({ id: device.id })}>
+          <Button variant="outline" size="sm" className="h-8 border-white/10" onClick={() => onDelete(device.id)}>
             <Trash2 className="h-3.5 w-3.5 text-red-400" />
           </Button>
         </div>
@@ -164,16 +189,8 @@ function DesktopDeviceRow({ device }: { device: Device }) {
   );
 }
 
-// Create Form
-function CreateDeviceForm({ onClose }: { onClose: () => void }) {
-  const utils = api.useUtils();
-  const createMutation = api.device.create.useMutation({
-    onSuccess: () => {
-      utils.device.list.invalidate();
-      onClose();
-    },
-  });
-
+// Create Form (demo: calls onCreate to add to local list)
+function CreateDeviceForm({ onClose, onCreate }: { onClose: () => void; onCreate: (d: Partial<Device>) => void }) {
   const [form, setForm] = useState({
     name: '',
     imei: '',
@@ -184,7 +201,7 @@ function CreateDeviceForm({ onClose }: { onClose: () => void }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate(form);
+    onCreate(form);
   };
 
   return (
@@ -244,8 +261,8 @@ function CreateDeviceForm({ onClose }: { onClose: () => void }) {
 
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={onClose} className="border-white/15">Batal</Button>
-            <NeonButton type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Membuat...' : 'Buat Perangkat'}
+            <NeonButton type="submit">
+              Buat Perangkat (Demo)
             </NeonButton>
           </div>
         </form>

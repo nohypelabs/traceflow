@@ -16,25 +16,41 @@ const TripPlaybackMap = dynamic(() => import('@/components/map/trip-playback'), 
 });
 
 export default function TripsPage() {
-  const { data: devices } = api.device.list.useQuery();
+  // Rich realistic trip mocks (match TripWithDevice type)
+  const mockTrips: any[] = [
+    { id: 't1', device: { name: 'Truk Armada-07', vehiclePlate: 'B 1234 ABC' }, distance: 187400, duration: 14280, maxSpeed: 82, averageSpeed: 47, startedAt: new Date(Date.now() - 1000*60*60*26), startAddress: 'Gudang Utara, Jakarta' },
+    { id: 't2', device: { name: 'Mobil Ops #12', vehiclePlate: 'B 5678 DEF' }, distance: 94500, duration: 7320, maxSpeed: 91, averageSpeed: 46, startedAt: new Date(Date.now() - 1000*60*60*19), startAddress: 'Kantor Pusat' },
+    { id: 't3', device: { name: 'Motor Kurir-03', vehiclePlate: 'B 9012 GHI' }, distance: 42300, duration: 3180, maxSpeed: 68, averageSpeed: 48, startedAt: new Date(Date.now() - 1000*60*60*11), startAddress: 'Depot BSD' },
+    { id: 't4', device: { name: 'Van Logistik-09', vehiclePlate: 'B 3456 JKL' }, distance: 156800, duration: 12420, maxSpeed: 75, averageSpeed: 45, startedAt: new Date(Date.now() - 1000*60*60*31), startAddress: 'Pool Maintenance' },
+    { id: 't5', device: { name: 'Truk C-22', vehiclePlate: 'B 6789 STU' }, distance: 67200, duration: 5400, maxSpeed: 64, averageSpeed: 45, startedAt: new Date(Date.now() - 1000*60*60*8), startAddress: 'Client Site BSD' },
+    { id: 't6', device: { name: 'Ambulance Support', vehiclePlate: 'B 1122 VWX' }, distance: 234500, duration: 16980, maxSpeed: 88, averageSpeed: 50, startedAt: new Date(Date.now() - 1000*60*60*38), startAddress: 'RS Harapan' },
+  ];
+
+  const mockDevices = [
+    { id: 'd1', name: 'Truk Armada-07' },
+    { id: 'd2', name: 'Mobil Ops #12' },
+    { id: 'd3', name: 'Motor Kurir-03' },
+    { id: 'd4', name: 'Van Logistik-09' },
+    { id: 'd6', name: 'Ambulance Support' },
+  ];
+
   const [selectedDevice, setSelectedDevice] = useState<string>('');
-  const [selectedTrip, setSelectedTrip] = useState<TripWithDevice | null>(null);
+  const [selectedTrip, setSelectedTrip] = useState<any | null>(null);
   const [dateRange, setDateRange] = useState({
     from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     to: new Date().toISOString().split('T')[0],
   });
 
-  const { data: trips, isLoading } = api.trip.list.useQuery(
-    { deviceId: selectedDevice, from: new Date(dateRange.from), to: new Date(dateRange.to) },
-    { enabled: !!selectedDevice }
-  );
+  const filteredTrips = selectedDevice 
+    ? mockTrips.filter(t => t.device.name.includes(mockDevices.find(d => d.id === selectedDevice)?.name || ''))
+    : mockTrips;
 
   const actions = (
     <Button
       variant="outline"
       size="default"
-      onClick={() => trips && exportTripsToCSV(trips)}
-      disabled={!trips || trips.length === 0}
+      onClick={() => exportTripsToCSV(filteredTrips)}
+      disabled={filteredTrips.length === 0}
       className="border-white/15 bg-white/5"
     >
       <Download className="h-4 w-4 md:mr-2" />
@@ -54,8 +70,8 @@ export default function TripsPage() {
               onChange={(e) => { setSelectedDevice(e.target.value); setSelectedTrip(null); }}
               className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm"
             >
-              <option value="">Pilih perangkat</option>
-              {devices?.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+              <option value="">Semua Perangkat (Demo)</option>
+              {mockDevices.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </div>
           <div>
@@ -73,14 +89,12 @@ export default function TripsPage() {
         {/* Trip List */}
         <SlideUp delay={0.1}>
           <CyberCard>
-            <div className="border-b border-white/10 p-4 text-sm font-medium tracking-wider text-zinc-400">PERJALANAN</div>
+            <div className="border-b border-white/10 p-4 text-sm font-medium tracking-wider text-zinc-400">PERJALANAN (Demo - 6 Trip Terbaru)</div>
             <div className="max-h-[58vh] overflow-y-auto">
-              {isLoading ? (
-                <div className="p-4 space-y-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />)}</div>
-              ) : trips && trips.length > 0 ? (
+              {filteredTrips.length > 0 ? (
                 <div className="divide-y divide-white/5">
                   <StaggerContainer>
-                    {trips.map((trip) => (
+                    {filteredTrips.slice(0, 6).map((trip) => (
                       <StaggerItem key={trip.id}>
                         <TripRow trip={trip} isSelected={selectedTrip?.id === trip.id} onClick={() => setSelectedTrip(trip)} />
                       </StaggerItem>
@@ -90,7 +104,7 @@ export default function TripsPage() {
               ) : (
                 <div className="flex h-64 flex-col items-center justify-center text-center text-zinc-500">
                   <Clock className="mb-2 h-8 w-8" />
-                  {selectedDevice ? 'Tidak ada perjalanan di rentang ini' : 'Pilih perangkat untuk melihat riwayat'}
+                  Pilih perangkat untuk melihat riwayat
                 </div>
               )}
             </div>

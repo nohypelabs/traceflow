@@ -50,14 +50,17 @@ export default function SettingsPage() {
 }
 
 function ProfileSettings() {
-  const { data: session } = api.auth.getSession.useQuery();
-  const utils = api.useUtils();
-  const [form, setForm] = useState({ name: '', email: '', currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [error, setError] = useState(''); const [success, setSuccess] = useState('');
+  // Demo mock current user data (realistic, matches real User type)
+  const mockSession = {
+    user: {
+      name: 'Budi Santoso',
+      email: 'budi.santoso@perusahaan.com',
+      role: 'MANAGER',
+    }
+  };
 
-  useEffect(() => {
-    if (session?.user) setForm((p) => ({ ...p, name: session.user.name ?? '', email: session.user.email ?? '' }));
-  }, [session]);
+  const [form, setForm] = useState({ name: 'Budi Santoso', email: 'budi.santoso@perusahaan.com', currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [error, setError] = useState(''); const [success, setSuccess] = useState('');
 
   const updateProfileMutation = api.auth.updateProfile.useMutation({
     onSuccess: () => { setSuccess('Profil berhasil diperbarui'); setError(''); utils.auth.getSession.invalidate(); },
@@ -106,26 +109,31 @@ function ProfileSettings() {
 }
 
 function OrganizationSettings() {
-  const { data: session } = api.auth.getSession.useQuery();
-  const { data: organization, isLoading } = api.organization.getById.useQuery({ id: session?.user?.organizationId ?? '' }, { enabled: !!session?.user?.organizationId });
-  const utils = api.useUtils();
-  const [form, setForm] = useState({ name: '', slug: '', logo: '' });
+  // Demo mock organization (matches real Organization type)
+  const mockOrg = {
+    id: 'org1',
+    name: 'PT Logistik Prima Indonesia',
+    slug: 'logistik-prima',
+    logo: 'https://via.placeholder.com/120x40/0a0f1e/67e8f9?text=LOGISTIK',
+  };
 
-  useEffect(() => { if (organization) setForm({ name: organization.name, slug: organization.slug, logo: organization.logo ?? '' }); }, [organization]);
+  const [form, setForm] = useState({ name: mockOrg.name, slug: mockOrg.slug, logo: mockOrg.logo || '' });
+  const [isLoading] = useState(false);
 
-  const updateMutation = api.organization.update.useMutation({ onSuccess: () => utils.organization.getById.invalidate() });
-
-  if (isLoading) return <CyberCard className="p-6"><div className="animate-pulse space-y-4"><div className="h-8 w-48 bg-white/10 rounded" /><div className="h-10 bg-white/10 rounded" /></div></CyberCard>;
-  if (!organization) return <CyberCard className="p-6 text-zinc-400">Tidak ada organisasi</CyberCard>;
+  // Demo update (simulates real mutation)
+  const handleDemoUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert('Demo: Pengaturan Organisasi berhasil disimpan! (Data mock akan tersimpan di implementasi nyata)');
+  };
 
   return (
     <CyberCard className="p-6">
       <div className="mb-5 text-lg font-semibold tracking-tight">Pengaturan Organisasi</div>
-      <form onSubmit={(e) => { e.preventDefault(); updateMutation.mutate({ id: session!.user.organizationId!, ...form }); }} className="space-y-4">
+      <form onSubmit={handleDemoUpdate} className="space-y-4">
         <div><label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">NAMA ORGANISASI</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm" required /></div>
         <div><label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">SLUG</label><input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm font-mono" required /><div className="mt-1 text-xs text-zinc-500">URL: /org/{form.slug}</div></div>
         <div><label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">LOGO URL</label><input type="url" value={form.logo} onChange={(e) => setForm({ ...form, logo: e.target.value })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm" /></div>
-        <div className="flex justify-end"><Button type="submit" disabled={updateMutation.isPending}>{updateMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Simpan</Button></div>
+        <div className="flex justify-end"><Button type="submit">Simpan (Demo)</Button></div>
       </form>
     </CyberCard>
   );

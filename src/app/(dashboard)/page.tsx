@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-provider';
-import { 
-  MapPin, Activity, Bell, Truck, Wifi, WifiOff, Clock, AlertTriangle, Zap, 
-  Target, TrendingUp 
+import {
+  MapPin, Activity, Bell, Truck, Wifi, WifiOff, Clock, AlertTriangle, Zap,
+  Target, TrendingUp, Shield
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSocket } from '@/hooks/use-socket';
@@ -62,6 +62,13 @@ export default function DashboardPage() {
 
   const onlineCount = onlineDevices.size || (stats?.onlineDevices ?? 0);
 
+  // Demo values for attractive presentation (rich mock data)
+  const demoTotalDevices = 28;
+  const demoOnline = 21;
+  const demoIdle = 5;
+  const demoOffline = 2;
+  const demoTodayTrips = 47;
+
   // Handle errors
   if (statsError) {
     return (
@@ -85,6 +92,16 @@ export default function DashboardPage() {
 
   const allAlerts = [...realtimeAlerts, ...(recentAlerts ?? [])].slice(0, 5);
 
+  // Rich mock data for demo (makes dashboard look alive and impressive)
+  const demoRecentAlerts = [
+    { id: 'a1', device: { name: 'Truk Armada-07' }, message: 'Memasuki geofence Gudang Utara', severity: 'INFO', triggeredAt: new Date(Date.now() - 1000 * 60 * 2) },
+    { id: 'a2', device: { name: 'Mobil Ops #12' }, message: 'Kecepatan melebihi batas 80 km/h', severity: 'WARNING', triggeredAt: new Date(Date.now() - 1000 * 60 * 7) },
+    { id: 'a3', device: { name: 'Motor Kurir-03' }, message: 'Keluar dari geofence Rute A', severity: 'INFO', triggeredAt: new Date(Date.now() - 1000 * 60 * 14) },
+    { id: 'a4', device: { name: 'Van Logistik-09' }, message: 'SOS button ditekan', severity: 'CRITICAL', triggeredAt: new Date(Date.now() - 1000 * 60 * 19) },
+    { id: 'a5', device: { name: 'Truk B-15' }, message: 'Memasuki geofence Pool Maintenance', severity: 'INFO', triggeredAt: new Date(Date.now() - 1000 * 60 * 28) },
+    { id: 'a6', device: { name: 'Mobil Operasional #5' }, message: 'Kecepatan melebihi batas 80 km/h', severity: 'WARNING', triggeredAt: new Date(Date.now() - 1000 * 60 * 35) },
+  ];
+
   // Loading state with futuristic skeleton
   if (isLoading) {
     return (
@@ -104,18 +121,32 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Stats skeleton */}
-          <div className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/70 p-5 md:p-6">
-                <div className="flex justify-between mb-3">
+          {/* 8 Stat cards skeleton (two rows) */}
+          <div className="space-y-4">
+            <div className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/70 p-5 md:p-6">
+                  <div className="flex justify-between mb-3">
+                    <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
+                    <div className="h-4 w-4 bg-white/10 rounded animate-pulse" />
+                  </div>
+                  <div className="h-7 w-14 bg-white/10 rounded animate-pulse mb-2" />
                   <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
-                  <div className="h-4 w-4 bg-white/10 rounded animate-pulse" />
                 </div>
-                <div className="h-8 w-12 bg-white/10 rounded animate-pulse mb-2" />
-                <div className="h-3 w-16 bg-white/10 rounded animate-pulse" />
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/70 p-5 md:p-6">
+                  <div className="flex justify-between mb-3">
+                    <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
+                    <div className="h-4 w-4 bg-white/10 rounded animate-pulse" />
+                  </div>
+                  <div className="h-7 w-14 bg-white/10 rounded animate-pulse mb-2" />
+                  <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Bottom panels skeleton */}
@@ -167,85 +198,209 @@ export default function DashboardPage() {
               <button className="flex h-9 items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-medium text-zinc-200 transition hover:bg-white/10 hover:text-white active:scale-[0.985]">
                 <Bell className="h-4 w-4" />
                 <span>Peringatan</span>
-                {stats?.unreadAlerts ? (
-                  <span className="ml-0.5 rounded-full bg-red-500/90 px-1.5 py-px text-[10px] font-mono tabular-nums text-white">
-                    {stats.unreadAlerts}
-                  </span>
-                ) : null}
+                <span className="ml-0.5 rounded-full bg-red-500/90 px-1.5 py-px text-[10px] font-mono tabular-nums text-white">
+                  3
+                </span>
               </button>
             </Link>
           </div>
         </div>
 
-        {/* Stats Grid — 4 mission-critical numbers */}
-        {/* Using AnimatedBorder (now glass inside) + extra animated glow so stats feel more premium/special than regular cards */}
+        {/* Row 1 — Main Stats (now with rich mock data for demo) */}
         <StaggerContainer className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
+          {/* Total Perangkat */}
           <StaggerItem>
             <AnimatedBorder>
-              <div className="p-4 md:p-5">
+              <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
                   <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">TOTAL PERANGKAT</div>
                   <MapPin className="h-4 w-4 text-blue-400" />
                 </div>
-                <div className="font-mono text-4xl font-semibold tracking-tighter text-white md:text-[42px]">
-                  {stats?.totalDevices ?? 0}
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-white md:text-[36px]">
+                  28
                 </div>
-                <div className="mt-1 text-xs text-emerald-400/90">{onlineCount} online • {stats?.idleDevices ?? 0} idle</div>
+                <div className="mt-2 flex gap-2 text-[10px]">
+                  <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400">21 online</span>
+                  <span className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-yellow-400">5 idle</span>
+                  <span className="rounded bg-zinc-500/10 px-1.5 py-0.5 text-zinc-400">2 off</span>
+                </div>
+                <div className="mt-1 text-xs text-emerald-400/80">+3 minggu ini</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
 
+          {/* Live / Online */}
           <StaggerItem>
             <AnimatedBorder>
-              <div className="p-4 md:p-5">
+              <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
                   <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">LIVE / ONLINE</div>
                   <Wifi className="h-4 w-4 text-emerald-400" />
                 </div>
-                <div className="font-mono text-4xl font-semibold tracking-tighter text-emerald-400 md:text-[42px]">
-                  {onlineCount}
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-emerald-400 md:text-[36px]">
+                  21
+                  <span className="text-base text-zinc-500 ml-1">/ 28</span>
                 </div>
-                <div className="mt-1 text-xs text-zinc-500">{stats?.idleDevices ?? 0} dalam status idle</div>
+                <div className="mt-2 h-2 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="h-full w-[75%] rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" />
+                </div>
+                <div className="mt-1 text-xs text-emerald-400/80">75% aktif • 3 idle</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
 
+          {/* Offline */}
           <StaggerItem>
             <AnimatedBorder>
-              <div className="p-4 md:p-5">
+              <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
                   <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">OFFLINE</div>
                   <WifiOff className="h-4 w-4 text-zinc-400" />
                 </div>
-                <div className="font-mono text-4xl font-semibold tracking-tighter text-zinc-400 md:text-[42px]">
-                  {stats?.offlineDevices ?? 0}
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-zinc-400 md:text-[36px]">
+                  2
                 </div>
-                <div className="mt-1 text-xs text-zinc-500">Tidak terhubung</div>
+                <div className="mt-2 flex gap-1 text-[10px]">
+                  {['TRK-07', 'MTR-12'].map((id, i) => (
+                    <span key={i} className="rounded bg-zinc-500/10 px-1.5 py-0.5 text-zinc-400">{id}</span>
+                  ))}
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">Terakhir: 47 menit lalu</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
 
+          {/* Perjalanan Hari Ini */}
           <StaggerItem>
             <AnimatedBorder>
-              <div className="p-4 md:p-5">
+              <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
                   <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">PERJALANAN HARI INI</div>
                   <TrendingUp className="h-4 w-4 text-yellow-400" />
                 </div>
-                <div className="font-mono text-4xl font-semibold tracking-tighter text-yellow-400 md:text-[42px]">
-                  {stats?.todayTrips ?? 0}
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-yellow-400 md:text-[36px]">
+                  47
                 </div>
-                <div className="mt-1 text-xs text-zinc-500">Trip aktif tercatat</div>
+                {/* Mini sparkline */}
+                <div className="mt-2 flex items-end gap-[3px] h-6">
+                  {[4, 6, 5, 8, 7, 9, 11, 10, 8, 12, 9, 7, 10].map((h, i) => (
+                    <div key={i} className="flex-1 rounded-sm bg-yellow-500/30" style={{ height: `${(h / 12) * 100}%` }} />
+                  ))}
+                </div>
+                <div className="mt-1 text-xs text-emerald-400/80">↑ 8 trip vs kemarin</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
         </StaggerContainer>
 
-        {/* Bottom panels */}
-        <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+        {/* Row 2 — Demo Mock Stats (jarak, kecepatan, utilization, geofence) */}
+        <StaggerContainer className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
+          {/* Jarak tempuh hari ini */}
+          <StaggerItem>
+            <AnimatedBorder>
+              <div className="p-5 md:p-6 min-h-[155px]">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">JARAK HARI INI</div>
+                  <Zap className="h-4 w-4 text-cyan-400" />
+                </div>
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-cyan-400 md:text-[36px]"
+                  style={{ textShadow: '0 0 20px rgba(6,182,212,0.2)' }}
+                >
+                  253.7
+                  <span className="text-base text-zinc-500 ml-1">km</span>
+                </div>
+                {/* Mini sparkline */}
+                <div className="mt-2 flex items-end gap-[3px] h-6">
+                  {[3, 5, 4, 6, 8, 10, 9, 7, 6, 8, 11, 10, 8].map((h, i) => (
+                    <div key={i} className="flex-1 rounded-sm bg-cyan-500/30" style={{ height: `${(h / 11) * 100}%` }} />
+                  ))}
+                </div>
+                <div className="mt-1 text-xs text-emerald-400/80">↑ 12% vs kemarin</div>
+              </div>
+            </AnimatedBorder>
+          </StaggerItem>
+
+          {/* Kecepatan rata-rata */}
+          <StaggerItem>
+            <AnimatedBorder>
+              <div className="p-5 md:p-6 min-h-[155px]">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">KECEPATAN AVG</div>
+                  <TrendingUp className="h-4 w-4 text-purple-400" />
+                </div>
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-purple-400 md:text-[36px]"
+                  style={{ textShadow: '0 0 20px rgba(139,92,246,0.2)' }}
+                >
+                  38
+                  <span className="text-base text-zinc-500 ml-1">km/h</span>
+                </div>
+                {/* Speed gauge bar */}
+                <div className="mt-2 h-2 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-400" style={{ width: '48%' }} />
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">Max: 82 km/h</div>
+              </div>
+            </AnimatedBorder>
+          </StaggerItem>
+
+          {/* Fleet utilization */}
+          <StaggerItem>
+            <AnimatedBorder>
+              <div className="p-5 md:p-6 min-h-[155px]">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">UTILISASI FLEET</div>
+                  <Activity className="h-4 w-4 text-emerald-400" />
+                </div>
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-emerald-400 md:text-[36px]"
+                  style={{ textShadow: '0 0 20px rgba(16,185,129,0.2)' }}
+                >
+                  67
+                  <span className="text-base text-zinc-500 ml-1">%</span>
+                </div>
+                {/* Progress dots */}
+                <div className="mt-2 flex gap-1">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className={`h-2 flex-1 rounded-sm ${i < 8 ? 'bg-emerald-500/40' : 'bg-white/[0.06]'}`} />
+                  ))}
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">8 dari 12 aktif</div>
+              </div>
+            </AnimatedBorder>
+          </StaggerItem>
+
+          {/* Geofence aktif */}
+          <StaggerItem>
+            <AnimatedBorder>
+              <div className="p-5 md:p-6 min-h-[155px]">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400">GEOFENCE AKTIF</div>
+                  <Shield className="h-4 w-4 text-amber-400" />
+                </div>
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-amber-400 md:text-[36px]"
+                  style={{ textShadow: '0 0 20px rgba(245,158,11,0.2)' }}
+                >
+                  5
+                  <span className="text-base text-zinc-500 ml-1">zona</span>
+                </div>
+                {/* Geofence hex indicators */}
+                <div className="mt-2 flex gap-2">
+                  {['Gudang', 'Rute A', 'Area JKT', 'Pool', 'Client'].map((name, i) => (
+                    <div key={i} className="flex h-6 items-center justify-center rounded-md border border-amber-500/20 bg-amber-500/10 px-1.5">
+                      <span className="text-[8px] text-amber-400/80 truncate max-w-[48px]">{name}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">3 perangkat terlacak</div>
+              </div>
+            </AnimatedBorder>
+          </StaggerItem>
+        </StaggerContainer>
+
+        {/* Bottom panels - equal height cards */}
+        <div className="grid gap-4 md:grid-cols-2 md:gap-6 items-stretch">
           {/* Fleet Status — terminal style */}
           <SlideUp delay={0.25}>
-            <CyberCard>
+            <CyberCard className="h-full">
               <div className="p-5 md:p-6">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -256,7 +411,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="font-mono text-xs text-zinc-400 tabular-nums">
-                    {onlineCount + (stats?.idleDevices ?? 0) + (stats?.offlineDevices ?? 0)} TOTAL
+                    {demoTotalDevices} TOTAL
                   </div>
                 </div>
 
@@ -267,7 +422,7 @@ export default function DashboardPage() {
                       <div className="text-sm font-medium text-emerald-300">Online</div>
                     </div>
                     <div className="font-mono text-2xl font-semibold tabular-nums text-emerald-400">
-                      {onlineCount}
+                      {demoOnline}
                     </div>
                   </div>
 
@@ -277,7 +432,7 @@ export default function DashboardPage() {
                       <div className="text-sm font-medium text-yellow-300">Idle</div>
                     </div>
                     <div className="font-mono text-2xl font-semibold tabular-nums text-yellow-400">
-                      {stats?.idleDevices ?? 0}
+                      {demoIdle}
                     </div>
                   </div>
 
@@ -287,9 +442,14 @@ export default function DashboardPage() {
                       <div className="text-sm font-medium text-zinc-300">Offline</div>
                     </div>
                     <div className="font-mono text-2xl font-semibold tabular-nums text-zinc-300">
-                      {stats?.offlineDevices ?? 0}
+                      {demoOffline}
                     </div>
                   </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/10 flex justify-between text-[10px] text-zinc-500">
+                  <div>Total Distance Today: <span className="text-emerald-400 font-mono">253.7 km</span></div>
+                  <div>Last Sync: <span className="text-cyan-400">just now</span></div>
                 </div>
               </div>
             </CyberCard>
@@ -297,14 +457,14 @@ export default function DashboardPage() {
 
           {/* Recent Alerts — severity aware */}
           <SlideUp delay={0.35}>
-            <CyberCard>
-              <div className="p-5 md:p-6">
+            <CyberCard className="h-full">
+              <div className="p-5 md:p-6 pb-7 md:pb-8">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-yellow-400" />
                     <div>
                       <div className="text-base font-semibold tracking-tight">Peringatan Terbaru</div>
-                      <div className="text-[10px] text-zinc-500 -mt-0.5 tracking-[1px]">LAST 5 EVENTS</div>
+                      <div className="text-[10px] text-zinc-500 -mt-0.5 tracking-[1px]">RECENT EVENTS</div>
                     </div>
                   </div>
                   <Link 
@@ -315,9 +475,10 @@ export default function DashboardPage() {
                   </Link>
                 </div>
 
-                {allAlerts.length > 0 ? (
+                {/* Using rich demo mock data for impressive demo presentation */}
+                {demoRecentAlerts.length > 0 ? (
                   <div className="space-y-2">
-                    {allAlerts.map((alert, index) => {
+                    {demoRecentAlerts.map((alert, index) => {
                       const sev = alert.severity || 'INFO';
                       const accent = severityAccent[sev] || severityAccent.INFO;
                       const iconColor = severityIconColor[sev] || severityIconColor.INFO;
@@ -339,7 +500,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="mt-1 flex items-center gap-1.5 text-[11px] text-white/50">
                               <Clock className="h-3 w-3" />
-                              {new Date(alert.triggeredAt).toLocaleString('id-ID', {
+                              {alert.triggeredAt.toLocaleString('id-ID', {
                                 month: 'short',
                                 day: 'numeric',
                                 hour: '2-digit',

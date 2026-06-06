@@ -8,8 +8,31 @@ import { PageWrapper, CyberCard, NeonButton } from '@/components/ui/page-wrapper
 import { Button } from '@/components/ui/button';
 
 export default function GeofencesPage() {
-  const { data: geofences, isLoading } = api.geofence.list.useQuery();
+  // Rich realistic mock geofences (matches real Geofence type — easy to replace with API later)
+  const [geofences, setGeofences] = useState([
+    { id: 'g1', name: 'Gudang Utara', description: 'Zona penyimpanan utama', type: 'CIRCLE', centerLat: -6.2088, centerLng: 106.8456, radius: 500, color: '#3b82f6', createdAt: new Date('2024-10-01') },
+    { id: 'g2', name: 'Rute A - Tol', description: 'Koridor pengiriman cepat', type: 'POLYGON', centerLat: null, centerLng: null, radius: null, color: '#10b981', createdAt: new Date('2024-10-05') },
+    { id: 'g3', name: 'Area JKT Selatan', description: 'Wilayah operasional selatan', type: 'CIRCLE', centerLat: -6.25, centerLng: 106.81, radius: 1200, color: '#8b5cf6', createdAt: new Date('2024-10-12') },
+    { id: 'g4', name: 'Pool Maintenance', description: 'Bengkel dan parkir kendaraan', type: 'CIRCLE', centerLat: -6.19, centerLng: 106.83, radius: 300, color: '#f59e0b', createdAt: new Date('2024-10-20') },
+    { id: 'g5', name: 'Client Site - BSD', description: 'Lokasi klien utama', type: 'POLYGON', centerLat: null, centerLng: null, radius: null, color: '#ef4444', createdAt: new Date('2024-11-01') },
+    { id: 'g6', name: 'Depot Bahan Bakar', description: 'Area pengisian bahan bakar', type: 'CIRCLE', centerLat: -6.22, centerLng: 106.79, radius: 400, color: '#06b6d4', createdAt: new Date('2024-11-08') },
+  ]);
+
   const [showCreate, setShowCreate] = useState(false);
+
+  const handleDemoCreate = (newG: any) => {
+    const g = {
+      id: 'g' + Date.now(),
+      ...newG,
+      createdAt: new Date(),
+    };
+    setGeofences(prev => [g, ...prev]);
+    setShowCreate(false);
+  };
+
+  const handleDemoDelete = (id: string) => {
+    setGeofences(prev => prev.filter(g => g.id !== id));
+  };
 
   return (
     <PageWrapper
@@ -22,20 +45,16 @@ export default function GeofencesPage() {
       }
     >
       <AnimatedPresence show={showCreate}>
-        <CreateGeofenceForm onClose={() => setShowCreate(false)} />
+        <CreateGeofenceForm onClose={() => setShowCreate(false)} onCreate={handleDemoCreate} />
       </AnimatedPresence>
 
       <CyberCard>
-        {isLoading ? (
-          <div className="p-6 space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />)}
-          </div>
-        ) : geofences && geofences.length > 0 ? (
+        {geofences.length > 0 ? (
           <div className="divide-y divide-white/5">
             <StaggerContainer>
               {geofences.map((geofence: any) => (
                 <StaggerItem key={geofence.id}>
-                  <GeofenceRow geofence={geofence} />
+                  <GeofenceRow geofence={geofence} onDelete={handleDemoDelete} />
                 </StaggerItem>
               ))}
             </StaggerContainer>
@@ -52,12 +71,7 @@ export default function GeofencesPage() {
   );
 }
 
-function GeofenceRow({ geofence }: { geofence: any }) {
-  const utils = api.useUtils();
-  const deleteMutation = api.geofence.delete.useMutation({
-    onSuccess: () => utils.geofence.list.invalidate(),
-  });
-
+function GeofenceRow({ geofence, onDelete }: { geofence: any; onDelete: (id: string) => void }) {
   return (
     <div className="flex items-center justify-between p-4 hover:bg-white/5 transition">
       <div className="flex items-center gap-4">
@@ -72,7 +86,7 @@ function GeofenceRow({ geofence }: { geofence: any }) {
       </div>
       <div className="flex gap-2">
         <Button variant="outline" size="sm" className="border-white/10"><Pencil className="h-3.5 w-3.5" /></Button>
-        <Button variant="outline" size="sm" className="border-white/10" onClick={() => deleteMutation.mutate({ id: geofence.id })}>
+        <Button variant="outline" size="sm" className="border-white/10" onClick={() => onDelete(geofence.id)}>
           <Trash2 className="h-3.5 w-3.5 text-red-400" />
         </Button>
       </div>
@@ -80,18 +94,16 @@ function GeofenceRow({ geofence }: { geofence: any }) {
   );
 }
 
-function CreateGeofenceForm({ onClose }: { onClose: () => void }) {
-  const utils = api.useUtils();
-  const createMutation = api.geofence.create.useMutation({
-    onSuccess: () => { utils.geofence.list.invalidate(); onClose(); },
-  });
-
+function CreateGeofenceForm({ onClose, onCreate }: { onClose: () => void; onCreate: (g: any) => void }) {
   const [form, setForm] = useState({
     name: '', description: '', type: 'CIRCLE' as const,
     centerLat: -6.2088, centerLng: 106.8456, radius: 500, color: '#3b82f6',
   });
 
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); createMutation.mutate(form); };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onCreate(form);
+  };
 
   return (
     <SlideUp>
@@ -135,8 +147,8 @@ function CreateGeofenceForm({ onClose }: { onClose: () => void }) {
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={onClose} className="border-white/15">Batal</Button>
-            <NeonButton type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Membuat...' : 'Buat Geofence'}
+            <NeonButton type="submit">
+              Buat Geofence (Demo)
             </NeonButton>
           </div>
         </form>

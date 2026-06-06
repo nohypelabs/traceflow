@@ -17,32 +17,28 @@ const severityAccent: Record<string, string> = {
 };
 
 export default function AlertsPage() {
-  const { data: alerts, isLoading } = api.alert.list.useQuery({ limit: 50 });
+  // Rich, realistic mock alerts (matches AlertWithDevice type perfectly — ready for real API swap)
+  const [mockAlerts, setMockAlerts] = useState<AlertWithDevice[]>([
+    { id: 'al1', deviceId: 'd1', geofenceId: 'g1', type: 'GEOFENCE_ENTER', severity: 'INFO', message: 'Memasuki geofence Gudang Utara', latitude: -6.2088, longitude: 106.8456, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*2), device: { name: 'Truk Armada-07', vehiclePlate: 'B 1234 ABC' }, geofence: { name: 'Gudang Utara' } },
+    { id: 'al2', deviceId: 'd2', geofenceId: null, type: 'SPEEDING', severity: 'WARNING', message: 'Kecepatan melebihi batas 80 km/h', latitude: -6.175, longitude: 106.865, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*7), device: { name: 'Mobil Ops #12', vehiclePlate: 'B 5678 DEF' }, geofence: null },
+    { id: 'al3', deviceId: 'd3', geofenceId: 'g2', type: 'GEOFENCE_EXIT', severity: 'INFO', message: 'Keluar dari geofence Rute A - Tol', latitude: -6.22, longitude: 106.81, isRead: true, triggeredAt: new Date(Date.now() - 1000*60*14), device: { name: 'Motor Kurir-03', vehiclePlate: 'B 9012 GHI' }, geofence: { name: 'Rute A - Tol' } },
+    { id: 'al4', deviceId: 'd4', geofenceId: null, type: 'SOS', severity: 'CRITICAL', message: 'SOS button ditekan - butuh bantuan', latitude: -6.19, longitude: 106.83, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*19), device: { name: 'Van Logistik-09', vehiclePlate: 'B 3456 JKL' }, geofence: null },
+    { id: 'al5', deviceId: 'd6', geofenceId: 'g4', type: 'GEOFENCE_ENTER', severity: 'INFO', message: 'Memasuki geofence Pool Maintenance', latitude: -6.205, longitude: 106.85, isRead: true, triggeredAt: new Date(Date.now() - 1000*60*28), device: { name: 'Ambulance Support', vehiclePlate: 'B 1122 VWX' }, geofence: { name: 'Pool Maintenance' } },
+    { id: 'al6', deviceId: 'd2', geofenceId: null, type: 'SPEEDING', severity: 'WARNING', message: 'Kecepatan melebihi batas 80 km/h', latitude: -6.18, longitude: 106.87, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*35), device: { name: 'Mobil Ops #12', vehiclePlate: 'B 5678 DEF' }, geofence: null },
+    { id: 'al7', deviceId: 'd8', geofenceId: 'g3', type: 'GEOFENCE_EXIT', severity: 'INFO', message: 'Keluar Area JKT Selatan', latitude: -6.25, longitude: 106.81, isRead: true, triggeredAt: new Date(Date.now() - 1000*60*42), device: { name: 'Bus Sekolah-03', vehiclePlate: 'B 4455 YZ' }, geofence: { name: 'Area JKT Selatan' } },
+    { id: 'al8', deviceId: 'd12', geofenceId: 'g6', type: 'GEOFENCE_ENTER', severity: 'INFO', message: 'Memasuki Depot Bahan Bakar', latitude: -6.195, longitude: 106.81, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*51), device: { name: 'Truk Tanker-11', vehiclePlate: 'B 9900 BB' }, geofence: { name: 'Depot Bahan Bakar' } },
+  ]);
+
   const [filter, setFilter] = useState<string>('all');
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
-  const { socket } = useSocket();
-  const [realtimeAlerts, setRealtimeAlerts] = useState<AlertWithDevice[]>([]);
 
-  useEffect(() => {
-    if (!socket) return;
-    const handleNewAlert = (alert: AlertWithDevice) => {
-      setRealtimeAlerts((prev) => [alert, ...prev.slice(0, 49)]);
-    };
-    socket.on('alert:new', handleNewAlert);
-    return () => {
-      socket.off('alert:new', handleNewAlert);
-    };
-  }, [socket]);
-
-  const allAlerts = [...realtimeAlerts, ...(alerts?.items ?? [])];
-
-  const filteredAlerts = allAlerts.filter((alert) => {
+  const filteredAlerts = mockAlerts.filter((alert) => {
     if (filter !== 'all' && alert.type !== filter) return false;
     if (showUnreadOnly && alert.isRead) return false;
     return true;
   });
 
-  const unreadCount = allAlerts.filter((a) => !a.isRead).length;
+  const unreadCount = mockAlerts.filter((a) => !a.isRead).length;
 
   const actions = (
     <div className="flex gap-2">
@@ -68,6 +64,14 @@ export default function AlertsPage() {
     </div>
   );
 
+  const markRead = (id: string) => {
+    setMockAlerts(prev => prev.map(a => a.id === id ? { ...a, isRead: true } : a));
+  };
+
+  const deleteAlert = (id: string) => {
+    setMockAlerts(prev => prev.filter(a => a.id !== id));
+  };
+
   return (
     <PageWrapper
       title="Peringatan"
@@ -85,18 +89,14 @@ export default function AlertsPage() {
         </div>
       </CyberCard>
 
-      {/* Alerts List */}
+      {/* Alerts List - rich demo mocks */}
       <CyberCard>
-        {isLoading ? (
-          <div className="p-6 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />)}
-          </div>
-        ) : filteredAlerts.length > 0 ? (
+        {filteredAlerts.length > 0 ? (
           <div className="divide-y divide-white/5">
             <StaggerContainer>
               {filteredAlerts.map((alert) => (
                 <StaggerItem key={alert.id}>
-                  <AlertRow alert={alert} />
+                  <AlertRow alert={alert} onMarkRead={markRead} onDelete={deleteAlert} />
                 </StaggerItem>
               ))}
             </StaggerContainer>
@@ -125,11 +125,7 @@ function FilterButton({ active, onClick, icon, children }: any) {
   );
 }
 
-function AlertRow({ alert }: { alert: AlertWithDevice }) {
-  const utils = api.useUtils();
-  const markReadMutation = api.alert.markRead.useMutation({ onSuccess: () => utils.alert.list.invalidate() });
-  const deleteMutation = api.alert.delete.useMutation({ onSuccess: () => utils.alert.list.invalidate() });
-
+function AlertRow({ alert, onMarkRead, onDelete }: { alert: AlertWithDevice; onMarkRead: (id: string) => void; onDelete: (id: string) => void }) {
   const sev = alert.severity || 'INFO';
   const accent = severityAccent[sev] || severityAccent.INFO;
 
@@ -152,16 +148,16 @@ function AlertRow({ alert }: { alert: AlertWithDevice }) {
         </div>
         <div className="mt-1 flex items-center gap-3 text-xs text-white/50">
           {alert.device?.name && <span className="font-mono text-cyan-400/70">{alert.device.name}</span>}
-          <span>{new Date(alert.triggeredAt).toLocaleString('id-ID')}</span>
+          <span>{alert.triggeredAt.toLocaleString('id-ID')}</span>
         </div>
       </div>
       <div className="flex shrink-0 gap-1.5">
         {!alert.isRead && (
-          <Button variant="outline" size="sm" className="h-8 border-white/10" onClick={() => markReadMutation.mutate({ id: alert.id })}>
+          <Button variant="outline" size="sm" className="h-8 border-white/10" onClick={() => onMarkRead(alert.id)}>
             <Check className="h-3.5 w-3.5" />
           </Button>
         )}
-        <Button variant="outline" size="sm" className="h-8 border-white/10" onClick={() => deleteMutation.mutate({ id: alert.id })}>
+        <Button variant="outline" size="sm" className="h-8 border-white/10" onClick={() => onDelete(alert.id)}>
           <Trash2 className="h-3.5 w-3.5 text-red-400" />
         </Button>
       </div>

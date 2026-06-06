@@ -19,29 +19,35 @@ export default function ReportsPage() {
   const { data: trips } = api.trip.list.useQuery({ from: dateRange.start, to: dateRange.end });
   const { data: alerts } = api.alert.list.useQuery({ limit: 1000 });
 
+  // Rich demo report data (structured like real aggregated data - easy to swap with real queries)
   const reportData: ReportData = {
     period,
     startDate: dateRange.start,
     endDate: dateRange.end,
     stats: {
-      totalDevices: stats?.totalDevices ?? 0,
-      onlineDevices: stats?.onlineDevices ?? 0,
-      offlineDevices: stats?.offlineDevices ?? 0,
-      idleDevices: stats?.idleDevices ?? 0,
-      totalTrips: trips?.length ?? 0,
-      totalDistance: trips?.reduce((sum, t) => sum + (t.distance ?? 0), 0) ?? 0,
-      totalAlerts: alerts?.items?.length ?? 0,
-      alertsByType: alerts?.items?.reduce((acc, a) => { acc[a.type] = (acc[a.type] || 0) + 1; return acc; }, {} as Record<string, number>) ?? {},
+      totalDevices: 28,
+      onlineDevices: 21,
+      offlineDevices: 2,
+      idleDevices: 5,
+      totalTrips: 47,
+      totalDistance: 253700,
+      totalAlerts: 12,
+      alertsByType: { GEOFENCE_ENTER: 5, SPEEDING: 4, GEOFENCE_EXIT: 2, SOS: 1 },
     },
-    devices: devices?.map(d => ({
-      id: d.id, name: d.name, status: d.status,
-      trips: trips?.filter(t => t.deviceId === d.id).length ?? 0,
-      distance: trips?.filter(t => t.deviceId === d.id).reduce((s, t) => s + (t.distance ?? 0), 0) ?? 0,
-      alerts: alerts?.items?.filter(a => a.deviceId === d.id).length ?? 0,
-    })) ?? [],
-    topAlerts: Object.entries((alerts?.items ?? []).reduce((acc, a) => { acc[a.type] = (acc[a.type] || 0) + 1; return acc; }, {} as Record<string, number>))
-      .map(([type, count]) => ({ type, count: count as number, percentage: ((count as number) / ((alerts?.items?.length || 1))) * 100 }))
-      .sort((a, b) => b.count - a.count).slice(0, 5),
+    devices: [
+      { id: 'd1', name: 'Truk Armada-07', status: 'ONLINE', trips: 8, distance: 45200, alerts: 2 },
+      { id: 'd2', name: 'Mobil Ops #12', status: 'ONLINE', trips: 6, distance: 28900, alerts: 3 },
+      { id: 'd3', name: 'Motor Kurir-03', status: 'ONLINE', trips: 11, distance: 12400, alerts: 1 },
+      { id: 'd4', name: 'Van Logistik-09', status: 'IDLE', trips: 4, distance: 31200, alerts: 0 },
+      { id: 'd6', name: 'Ambulance Support', status: 'ONLINE', trips: 3, distance: 18700, alerts: 4 },
+      { id: 'd12', name: 'Truk Tanker-11', status: 'ONLINE', trips: 5, distance: 37800, alerts: 2 },
+    ],
+    topAlerts: [
+      { type: 'SPEEDING', count: 4, percentage: 33 },
+      { type: 'GEOFENCE_ENTER', count: 5, percentage: 42 },
+      { type: 'GEOFENCE_EXIT', count: 2, percentage: 17 },
+      { type: 'SOS', count: 1, percentage: 8 },
+    ].slice(0, 5),
   };
 
   const handlePeriodChange = (p: ReportPeriod) => { setPeriod(p); setDateRange(getDateRange(p)); };
