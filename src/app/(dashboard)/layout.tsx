@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { GpsNetworkBackground } from '@/components/ui/gps-network-bg';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
@@ -11,14 +12,33 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="flex h-screen bg-zinc-950">
       {/* Animated GPS Network Background */}
       <GpsNetworkBackground />
 
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden" 
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="relative z-10">
-        <Sidebar />
+      <div 
+        className={`relative z-50 flex h-screen flex-col transition-all duration-300 md:relative md:flex ${
+          mobileMenuOpen ? 'fixed inset-y-0 left-0 w-64' : 'hidden'
+        } md:block ${sidebarCollapsed ? 'md:w-16' : 'md:w-64'}`}
+      >
+        <Sidebar 
+          collapsed={sidebarCollapsed && !mobileMenuOpen} 
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
+          onClose={() => setMobileMenuOpen(false)} 
+        />
       </div>
 
       {/* Main content */}
@@ -40,7 +60,7 @@ export default function DashboardLayout({
           </span>
         </div>
 
-        <Header />
+        <Header onToggleMobile={() => setMobileMenuOpen(!mobileMenuOpen)} />
         <main className="flex-1 overflow-y-auto p-6 pb-0">
           {children}
         </main>

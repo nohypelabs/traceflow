@@ -1,10 +1,14 @@
 'use client';
 
 import { signOut, useSession } from 'next-auth/react';
-import { Bell, LogOut, User, Wifi, WifiOff, Activity } from 'lucide-react';
+import { Bell, LogOut, User, Wifi, WifiOff, Activity, Menu } from 'lucide-react';
 import { useSocket } from '@/hooks/use-socket';
 
-export function Header() {
+interface HeaderProps {
+  onToggleMobile?: () => void;
+}
+
+export function Header({ onToggleMobile }: HeaderProps) {
   const { data: session } = useSession();
   const { isConnected } = useSocket();
 
@@ -14,6 +18,17 @@ export function Header() {
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 
       <div className="flex items-center gap-4">
+        {/* Mobile hamburger */}
+        {onToggleMobile && (
+          <button
+            onClick={onToggleMobile}
+            className="md:hidden -ml-2 rounded-lg p-2 text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
+
         {/* Connection status indicator */}
         <div className="flex items-center gap-2 rounded-full bg-white/[0.03] border border-white/[0.06] px-3 py-1">
           {isConnected ? (
