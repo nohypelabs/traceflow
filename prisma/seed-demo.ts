@@ -1,7 +1,7 @@
-const { PrismaClient } = require('../src/generated/prisma');
-const bcrypt = require('bcryptjs');
-
-const prisma = new PrismaClient();
+// Use the same Prisma instance setup as the app (from lib/prisma.ts) for consistent connection (adapter + pooler)
+import 'dotenv/config';
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 async function main() {
   console.log('Creating demo user...');
