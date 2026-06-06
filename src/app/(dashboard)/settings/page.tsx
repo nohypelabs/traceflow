@@ -50,6 +50,7 @@ export default function SettingsPage() {
 }
 
 function ProfileSettings() {
+  const utils = api.useUtils();
   // Demo mock current user data (realistic, matches real User type)
   const mockSession = {
     user: {

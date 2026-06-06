@@ -171,22 +171,37 @@ function TripPlayback({ trip }: { trip: any }) {
         <div><div className="font-mono text-xl font-semibold text-cyan-400">{stats.avgSpeed}</div><div className="text-zinc-500">rata² km/j</div></div>
       </div>
 
+      {/* Playback controls bar - better placement right under stats */}
+      <div className="border-b border-white/10 bg-zinc-950/50 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setIsPlaying(!isPlaying)} 
+            className="border-white/10 flex-shrink-0 h-8 w-8 p-0 flex items-center justify-center"
+          >
+            {isPlaying ? <RotateCcw className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </Button>
+          <div className="flex-1 flex items-center gap-2">
+            <input 
+              type="range" 
+              min="0" 
+              max="100" 
+              value={progress} 
+              onChange={(e) => setProgress(parseInt(e.target.value))} 
+              className="flex-1 accent-cyan-400" 
+            />
+            <span className="w-12 text-right text-xs tabular-nums text-zinc-400 font-mono">{progress}%</span>
+          </div>
+        </div>
+      </div>
+
       <div className="flex-1">
         {locations && locations.length > 0 ? (
           <TripPlaybackMap locations={locations} progress={progress} onProgressChange={setProgress} />
         ) : (
           <div className="flex h-full items-center justify-center text-zinc-500">Tidak ada data lokasi</div>
         )}
-      </div>
-
-      <div className="border-t border-white/10 p-4">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => setIsPlaying(!isPlaying)} className="border-white/10">
-            {isPlaying ? <RotateCcw className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </Button>
-          <input type="range" min="0" max="100" value={progress} onChange={(e) => setProgress(parseInt(e.target.value))} className="flex-1 accent-cyan-400" />
-          <span className="w-10 text-right text-xs tabular-nums text-zinc-400">{progress}%</span>
-        </div>
       </div>
     </div>
   );
