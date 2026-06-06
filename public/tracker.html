@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TraceFlow GPS Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Robust, sans-serif;
+      background: #0B1020;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    
+    .logo {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    
+    .subtitle {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+    
+    .status-card {
+      background: #1a1f2e;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .status-indicator.active {
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+    }
+    
+    .status-indicator.inactive {
+      background: #ef4444;
+    }
+    
+    .status-indicator.connecting {
+      background: #eab308;
+      animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .status-text {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .info-item {
+      background: #252a3a;
+      border-radius: 12px;
+      padding: 15px;
+    }
+    
+    .info-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 5px;
+    }
+    
+    .info-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .log {
+      margin-top: 20px;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .log-entry {
+      font-size: 12px;
+      color: #888;
+      padding: 5px 0;
+      border-bottom: 1px solid #252a3a;
+    }
+    
+    .log-entry.success {
+      color: #22c55e;
+    }
+    
+    .log-entry.error {
+      color: #ef4444;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">📍</div>
+    <h1>TraceFlow</h1>
+    <p class="subtitle">GPS Tracker</p>
+    
+    <div class="status-card">
+      <div>
+        <span class="status-indicator inactive" id="statusDot"></span>
+        <span class="status-text" id="statusText">Inactive</span>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Latitude</div>
+          <div class="info-value" id="lat">--</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Longitude</div>
+          <div class="info-value" id="lng">--</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Speed</div>
+          <div class="info-value" id="speed">-- km/h</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Updates</div>
+          <div class="info-value" id="updates">0</div>
+        </div>
+      </div>
+    </div>
+    
+    <button class="btn btn-primary" id="startBtn" onclick="startTracking()">
+      Start Tracking
+    </button>
+    <button class="btn btn-danger" id="stopBtn" onclick="stopTracking()" style="display: none;">
+      Stop Tracking
+    </button>
+    
+    <div class="log" id="log"></div>
+  </div>
+
+  <script>
+    // Configuration
+    const DEVICE_ID = 'PHONE_' + Math.random().toString(36).substr(2, 9);
+    const WEBHOOK_URL = window.location.origin + '/api/gps-webhook';
+    const UPDATE_INTERVAL = 5000; // 5 seconds
+    
+    let watchId = null;
+    let updateCount = 0;
+    let isTracking = false;
+    
+    // DOM elements
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const latEl = document.getElementById('lat');
+    const lngEl = document.getElementById('lng');
+    const speedEl = document.getElementById('speed');
+    const updatesEl = document.getElementById('updates');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const logEl = document.getElementById('log');
+    
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logEl.prepend(entry);
+      
+      // Keep only last 20 entries
+      while (logEl.children.length > 20) {
+        logEl.removeChild(logEl.lastChild);
+      }
+    }
+    
+    function setStatus(status, text) {
+      statusDot.className = `status-indicator ${status}`;
+      statusText.textContent = text;
+    }
+    
+    async function sendLocation(lat, lng, speed, heading) {
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-gps-provider': 'MOCK',
+          },
+          body: JSON.stringify({
+            deviceId: DEVICE_ID,
+            lat: lat,
+            lng: lng,
+            speed: speed || 0,
+            heading: heading || 0,
+            timestamp: new Date().toISOString(),
+          }),
+        });
+        
+        if (response.ok) {
+          updateCount++;
+          updatesEl.textContent = updateCount;
+          log(`Location sent: ${lat.toFixed(4)}, ${lng.toFixed(4)}`, 'success');
+        } else {
+          log(`Error: ${response.status}`, 'error');
+        }
+      } catch (error) {
+        log(`Error: ${error.message}`, 'error');
+      }
+    }
+    
+    function handlePosition(position) {
+      const { latitude, longitude, speed, heading } = position.coords;
+      
+      latEl.textContent = latitude.toFixed(6);
+      lngEl.textContent = longitude.toFixed(6);
+      speedEl.textContent = speed ? `${(speed * 3.6).toFixed(1)} km/h` : '0 km/h';
+      
+      sendLocation(latitude, longitude, speed ? speed * 3.6 : 0, heading);
+    }
+    
+    function handleError(error) {
+      log(`Geolocation error: ${error.message}`, 'error');
+      setStatus('inactive', 'Error');
+    }
+    
+    function startTracking() {
+      if (!navigator.geolocation) {
+        log('Geolocation not supported', 'error');
+        return;
+      }
+      
+      isTracking = true;
+      setStatus('connecting', 'Connecting...');
+      startBtn.style.display = 'none';
+      stopBtn.style.display = 'block';
+      
+      log(`Device ID: ${DEVICE_ID}`);
+      log('Starting GPS tracking...');
+      
+      // Get initial position
+      navigator.geolocation.getCurrentPosition(handlePosition, handleError, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      });
+      
+      // Watch position
+      watchId = navigator.geolocation.watchPosition(
+        handlePosition,
+        handleError,
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+      
+      setStatus('active', 'Tracking Active');
+      log('GPS tracking started');
+    }
+    
+    function stopTracking() {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      
+      isTracking = false;
+      setStatus('inactive', 'Inactive');
+      startBtn.style.display = 'block';
+      stopBtn.style.display = 'none';
+      
+      log('GPS tracking stopped');
+    }
+    
+    // Auto-register device on load
+    async function registerDevice() {
+      try {
+        const response = await fetch('/api/trpc/device.create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            0: {
+              json: {
+                name: `Phone ${DEVICE_ID.slice(-6)}`,
+                imei: DEVICE_ID,
+                provider: 'MOCK',
+                vehicleType: 'OTHER',
+              },
+            },
+          }),
+        });
+        
+        if (response.ok) {
+          log('Device registered', 'success');
+        }
+      } catch (error) {
+        // Ignore - device might already exist
+      }
+    }
+    
+    // Initialize
+    registerDevice();
+  </script>
+</body>
+</html>

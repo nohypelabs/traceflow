@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/socketio/(.*)",
+      "dest": "/api/socketio"
+    }
+  ],
+  "env": {
+    "NEXTAUTH_URL": "https://traceflow.vercel.app"
+  }
+}
