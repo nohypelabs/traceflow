@@ -2,7 +2,7 @@
 
 import { signOut, useSession } from 'next-auth/react';
 import { Bell, LogOut, User, Wifi, WifiOff, Activity, Menu } from 'lucide-react';
-import { useSocket } from '@/hooks/use-socket';
+import { useDeviceRealtime } from '@/hooks/use-device-realtime';
 import { ThemeToggle } from './theme-toggle';
 
 interface HeaderProps {
@@ -11,7 +11,7 @@ interface HeaderProps {
 
 export function Header({ onToggleMobile }: HeaderProps) {
   const { data: session } = useSession();
-  const { isConnected } = useSocket();
+  const { isConnected } = useDeviceRealtime();
 
   return (
     <header className="relative flex h-14 items-center justify-between border-b border-white/[0.06] dark:border-white/[0.06] border-zinc-200 bg-white/80 dark:bg-zinc-950/60 backdrop-blur-lg px-6">
