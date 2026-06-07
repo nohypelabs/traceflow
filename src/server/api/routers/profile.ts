@@ -12,6 +12,11 @@ function getSupabase() {
   return createClient(supabaseUrl, supabaseServiceKey);
 }
 
+async function deleteStorageFile(path: string): Promise<void> {
+  const supabase = getSupabase();
+  await supabase.storage.from(BUCKET).remove([path]);
+}
+
 export const profileRouter = createTRPCRouter({
   // Upload profile photo
   uploadPhoto: protectedProcedure
@@ -36,7 +41,7 @@ export const profileRouter = createTRPCRouter({
         const urlParts = currentUser.image.split(`${BUCKET}/`);
         if (urlParts.length > 1) {
           const oldPath = urlParts[1];
-          await supabase.storage.from(BUCKET).remove([oldPath]);
+          await deleteStorageFile(oldPath);
         }
       }
 
@@ -88,7 +93,7 @@ export const profileRouter = createTRPCRouter({
       const urlParts = currentUser.image.split(`${BUCKET}/`);
       if (urlParts.length > 1) {
         const oldPath = urlParts[1];
-        await supabase.storage.from(BUCKET).remove([oldPath]);
+        await deleteStorageFile(oldPath);
       }
     }
 
