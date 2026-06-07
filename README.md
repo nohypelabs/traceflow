@@ -1,162 +1,153 @@
-# 📍 TraceFlow — GPS Real-Time Tracking Dashboard
+# TraceFlow
 
 <div align="center">
 
-![TraceFlow](https://img.shields.io/badge/TraceFlow-v1.0.0-blue?style=for-the-badge)
-![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=for-the-badge&logo=postgresql)
+**GPS Real-Time Fleet Tracking Dashboard**
 
-**Sistem pelacakan GPS real-time dengan dashboard modern dan futuristik**
+![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)
+![License](https://img.shields.io/badge/license-Proprietary-red?style=flat-square)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square&logo=postgresql)
+![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js)
+
+Sistem manajemen armada GPS real-time dengan dashboard modern, geofencing, dan pelaporan lengkap.
 
 </div>
 
 ---
 
-## 📋 Daftar Isi
+## Daftar Isi
 
-- [Overview](#overview)
-- [Fitur Lengkap](#fitur-lengkap)
-- [Tech Stack](#tech-stack)
-- [Persyaratan Sistem](#persyaratan-sistem)
-- [Instalasi dari Nol](#instalasi-dari-nol)
-- [Konfigurasi Environment](#konfigurasi-environment)
-- [Setup Database](#setup-database)
-- [Menjalankan Aplikasi](#menjalankan-aplikasi)
-- [Deploy ke VPS (Production)](#deploy-ke-vps-production)
-- [Setup GPS Provider](#setup-gps-provider)
-- [Panduan Penggunaan](#panduan-penggunaan)
-- [API Reference](#api-reference)
-- [Troubleshooting](#troubleshooting)
-- [Struktur Project](#struktur-project)
-- [Lisensi](#lisensi)
+1. [Overview](#overview)
+2. [Fitur](#fitur)
+3. [Arsitektur Teknis](#arsitektur-teknis)
+4. [Persyaratan Sistem](#persyaratan-sistem)
+5. [Instalasi](#instalasi)
+6. [Konfigurasi Environment](#konfigurasi-environment)
+7. [Database](#database)
+8. [Deployment ke VPS](#deployment-ke-vps)
+9. [Integrasi GPS Provider](#integrasi-gps-provider)
+10. [Panduan Penggunaan](#panduan-penggunaan)
+11. [API Reference](#api-reference)
+12. [Troubleshooting](#troubleshooting)
+13. [Struktur Project](#struktur-project)
+14. [Lisensi](#lisensi)
 
 ---
 
 ## Overview
 
-TraceFlow adalah sistem manajemen armada GPS real-time yang memungkinkan Anda:
+TraceFlow adalah solusi manajemen armada berbasis web yang memungkinkan pemantauan kendaraan secara real-time, pembuatan zona geofence, penerimaan peringatan otomatis, serta analisis riwayat perjalanan.
 
-- **Melacak kendaraan** secara real-time di peta
-- **Menerima peringatan** otomatis (geofence, kecepatan, SOS)
-- **Melihat riwayat perjalanan** dengan playback di peta
-- **Mengelola perangkat** GPS dari berbagai vendor (Teltonika, Queclink, Concox)
-- **Menggunakan HP sebagai tracker** untuk testing cepat
+Aplikasi ini mendukung berbagai perangkat GPS dari vendor Teltonika, Queclink, dan Concox, serta menyediakan mode testing menggunakan GPS smartphone.
 
-Aplikasi ini dibangun dengan teknologi modern (Next.js 16, tRPC, Prisma, Socket.IO) dan siap deploy di VPS atau cloud.
+**Target pengguna:** Perusahaan logistik, layanan transportasi, manajemen armada kendaraan.
 
 ---
 
-## Fitur Lengkap
+## Fitur
 
-### 🗺️ Peta Live
-- Tracking real-time dengan Leaflet + OpenStreetMap
-- Marker berwarna berdasarkan status (Online/Idle/Offline)
-- Fly-to animation ketika memilih perangkat
-- Pulsing marker untuk perangkat yang sedang di-track
-- Device dropdown dengan pencarian
+### Peta Live
+- Pemantauan posisi kendaraan secara real-time di peta OpenStreetMap
+- Marker berkode warna berdasarkan status (Online, Idle, Offline)
+- Animasi transisi smooth antar perangkat (multi-step fly)
+- Dropdown pencarian perangkat di pojok kanan atas peta
 
-### 📱 Manajemen Perangkat
-- CRUD perangkat GPS
-- Support 4 provider: Teltonika, Queclink, Concox, Mock
-- 3 metode integrasi: GPS Tracker, API JSON Push, GPS HP
-- Informasi kendaraan (plat, jenis)
+### Manajemen Perangkat
+- CRUD perangkat GPS (Create, Read, Update, Delete)
+- Dukungan 4 provider: Teltonika, Queclink, Concox, Mock
+- 3 metode integrasi: GPS Tracker fisik, API JSON Push, GPS HP (browser)
+- Informasi kendaraan: plat nomor, jenis kendaraan
 
-### 🎯 Geofencing
-- Buat zona virtual (lingkaran/poligon)
-- Assign geofence ke perangkat spesifik
-- Peringatan otomatis masuk/keluar zona
-- Kustomisasi warna zona
+### Geofencing
+- Pembuatan zona virtual berbentuk lingkaran atau poligon
+- Penugasan geofence ke perangkat spesifik
+- Peringatan otomatis saat kendaraan masuk/keluar zona
+- Kustomisasi warna dan deskripsi zona
 
-### 🔔 Sistem Peringatan
+### Sistem Peringatan
 - 9 tipe peringatan: Speeding, Geofence Enter/Exit, SOS, Ignition On/Off, Low Battery, Device Offline, Idle Too Long
 - Filter berdasarkan tipe dan status baca
 - Mark read per item atau semua sekaligus
-- Export CSV
+- Export data ke CSV
 
-### 🛣️ Riwayat Perjalanan
-- Daftar perjalanan per perangkat
-- Filter berdasarkan tanggal
-- Putar ulang rute di peta
-- Statistik: jarak, durasi, kecepatan maks/rata-rata
+### Riwayat Perjalanan
+- Daftar perjalanan per perangkat dengan filter tanggal
+- Putar ulang rute di peta dengan kontrol playback
+- Statistik: jarak tempuh, durasi, kecepatan maksimum dan rata-rata
 
-### 📊 Laporan
-- Periode: Harian, Mingguan, Bulanan
-- Statistik: total perjalanan, jarak, peringatan
+### Laporan
+- Rentang waktu: Harian, Mingguan, Bulanan
+- Statistik agregat: total perjalanan, jarak, peringatan
 - Ringkasan per perangkat
-- Export: TXT, MD, CSV
+- Export: TXT, Markdown, CSV
 
-### 👤 Profil & Pengaturan
-- Upload foto profil
-- Ubah nama dan password
+### Pengaturan
+- Profil pengguna dengan upload foto
 - Manajemen organisasi
-
-### 📱 Responsif
-- Desktop: sidebar device list
-- Mobile: dropdown device selector
-- Semua halaman responsive
+- Pengaturan password
 
 ---
 
-## Tech Stack
+## Arsitektur Teknis
 
-| Kategori | Teknologi | Versi |
+| Komponen | Teknologi | Versi |
 |----------|-----------|-------|
-| **Framework** | Next.js (App Router) | 16 |
-| **Language** | TypeScript | 5 |
-| **Styling** | Tailwind CSS | 4 |
-| **UI Components** | shadcn/ui + Radix UI | - |
-| **Animations** | Framer Motion | 12 |
-| **Database** | PostgreSQL | 15+ |
-| **ORM** | Prisma | 7 |
-| **Authentication** | NextAuth v5 | 5 |
-| **API** | tRPC | 11 |
-| **Real-time** | Socket.IO | 4 |
-| **Maps** | Leaflet + OpenStreetMap | 1.9 |
-| **Icons** | Lucide React | - |
+| Framework | Next.js (App Router) | 16 |
+| Bahasa | TypeScript | 5 |
+| Styling | Tailwind CSS | 4 |
+| UI Components | shadcn/ui + Radix UI | - |
+| Animasi | Framer Motion | 12 |
+| Database | PostgreSQL | 15+ |
+| ORM | Prisma | 7 |
+| Autentikasi | NextAuth v5 | 5 |
+| API Layer | tRPC | 11 |
+| Real-time | Socket.IO | 4 |
+| Peta | Leaflet + OpenStreetMap | 1.9 |
+| Icon | Lucide React | - |
 
 ---
 
 ## Persyaratan Sistem
 
 ### Minimum
-- **OS:** Ubuntu 20.04+ / Debian 11+ / CentOS 8+
-- **RAM:** 2 GB
-- **CPU:** 1 vCPU
-- **Storage:** 10 GB
-- **Node.js:** 18.17+ (recommended: 20 LTS)
-- **PostgreSQL:** 14+
-- **pnpm:** 8+ (atau npm 9+)
+
+| Spesifikasi | Nilai |
+|-------------|-------|
+| OS | Ubuntu 20.04+ / Debian 11+ / CentOS 8+ |
+| RAM | 2 GB |
+| CPU | 1 vCPU |
+| Storage | 10 GB |
+| Node.js | 18.17+ |
+| PostgreSQL | 14+ |
+| Package Manager | pnpm 8+ atau npm 9+ |
 
 ### Recommended (Production)
-- **RAM:** 4 GB
-- **CPU:** 2 vCPU
-- **Storage:** 20 GB SSD
-- **Node.js:** 20 LTS
-- **PostgreSQL:** 15+
+
+| Spesifikasi | Nilai |
+|-------------|-------|
+| RAM | 4 GB |
+| CPU | 2 vCPU |
+| Storage | 20 GB SSD |
+| Node.js | 20 LTS |
+| PostgreSQL | 15+ |
 
 ---
 
-## Instalasi dari Nol
+## Instalasi
 
 ### 1. Install System Dependencies
 
 ```bash
-# Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install Node.js 20 LTS
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
-# Install pnpm
 npm install -g pnpm
 
-# Install PostgreSQL
-sudo apt install -y postgresql postgresql-contrib
-
-# Install build tools (untuk native modules)
-sudo apt install -y build-essential git
+sudo apt install -y postgresql postgresql-contrib build-essential git
 ```
 
 ### 2. Clone Repository
@@ -178,12 +169,11 @@ pnpm install
 cp .env.example .env
 ```
 
-Edit file `.env` (lihat [Konfigurasi Environment](#konfigurasi-environment)).
+Edit file `.env` sesuai konfigurasi Anda (lihat [Konfigurasi Environment](#konfigurasi-environment)).
 
 ### 5. Setup Database
 
 ```bash
-# Buat user dan database PostgreSQL
 sudo -u postgres psql <<EOF
 CREATE USER traceflow WITH PASSWORD 'your_password_here';
 CREATE DATABASE traceflow OWNER traceflow;
@@ -198,42 +188,42 @@ pnpm prisma generate
 pnpm prisma migrate dev --name init
 ```
 
-### 7. Seed Demo Data (Opsional)
+### 7. Seed Data Demo (Opsional)
 
 ```bash
 npx tsx prisma/seed-demo.ts
 ```
 
-Ini membuat akun demo:
-- **Email:** `admin@traceflow.com`
-- **Password:** `admin112233`
+Akun demo yang dibuat:
+- Email: `admin@traceflow.com`
+- Password: `admin112233`
 
-### 8. Jalankan Development
+### 8. Jalankan Aplikasi
 
 ```bash
 pnpm dev
 ```
 
-Buka `http://localhost:3000`
+Aplikasi berjalan di `http://localhost:3000`.
 
 ---
 
 ## Konfigurasi Environment
 
-File `.env` harus dikonfigurasi sebelum menjalankan aplikasi:
+### Template `.env`
 
 ```env
-# ── Database ──
+# Database
 DATABASE_URL="postgresql://traceflow:password@localhost:5432/traceflow"
 
-# ── Authentication ──
-NEXTAUTH_SECRET="generate-dengan-openssl-rand-hex-32"
+# Authentication
+NEXTAUTH_SECRET="<generate-dengan-openssl-rand-hex-32>"
 NEXTAUTH_URL="http://localhost:3000"
 
-# ── GPS Webhook Security ──
-WEBHOOK_SECRET="generate-dengan-openssl-rand-hex-32"
+# GPS Webhook Security
+WEBHOOK_SECRET="<generate-dengan-openssl-rand-hex-32>"
 
-# ── Supabase (untuk foto profil, opsional) ──
+# Supabase (opsional, untuk foto profil)
 NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
@@ -242,10 +232,6 @@ SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 ### Generate Secret Keys
 
 ```bash
-# Generate NEXTAUTH_SECRET
-openssl rand -hex 32
-
-# Generate WEBHOOK_SECRET
 openssl rand -hex 32
 ```
 
@@ -253,101 +239,60 @@ openssl rand -hex 32
 
 | Variable | Wajib | Deskripsi |
 |----------|-------|-----------|
-| `DATABASE_URL` | ✅ | URL koneksi PostgreSQL. Format: `postgresql://user:pass@host:port/dbname` |
-| `NEXTAUTH_SECRET` | ✅ | Secret key untuk JWT session. Harus random dan rahasia |
-| `NEXTAUTH_URL` | ✅ | URL aplikasi (tanpa trailing slash). Di production: `https://domain-anda.com` |
-| `WEBHOOK_SECRET` | ✅ | Bearer token untuk autentikasi GPS webhook. Dipakai di header `Authorization` |
-| `NEXT_PUBLIC_SUPABASE_URL` | ❌ | URL Supabase project (hanya untuk upload foto profil) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ❌ | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | ❌ | Supabase service role key (untuk storage) |
+| `DATABASE_URL` | Ya | URL koneksi PostgreSQL |
+| `NEXTAUTH_SECRET` | Ya | Secret key untuk JWT session |
+| `NEXTAUTH_URL` | Ya | URL aplikasi (production: `https://domain-anda.com`) |
+| `WEBHOOK_SECRET` | Ya | Bearer token untuk autentikasi GPS webhook |
+| `NEXT_PUBLIC_SUPABASE_URL` | Tidak | URL Supabase project (foto profil) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Tidak | Supabase anonymous key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Tidak | Supabase service role key |
 
 ---
 
-## Setup Database
+## Database
 
-### Prisma Schema
+### Schema
 
-Database menggunakan Prisma ORM. Schema ada di `prisma/schema.prisma`.
+Database menggunakan Prisma ORM. Schema utama ada di `prisma/schema.prisma`.
 
-### Migrasi
+### Perintah Migrasi
 
-```bash
-# Jalankan migrasi (development)
-pnpm prisma migrate dev
+| Perintah | Fungsi |
+|----------|--------|
+| `pnpm prisma migrate dev` | Jalankan migrasi (development) |
+| `pnpm prisma migrate deploy` | Jalankan migrasi (production) |
+| `pnpm prisma migrate reset` | Reset database (hapus semua data) |
+| `pnpm prisma studio` | Buka database browser |
+| `pnpm prisma generate` | Generate Prisma client |
 
-# Jalankan migrasi (production)
-pnpm prisma migrate deploy
+### Tabel Database
 
-# Reset database (WARNING: hapus semua data)
-pnpm prisma migrate reset
-
-# Buka Prisma Studio (database browser)
-pnpm prisma studio
-```
-
-### Database Tables
-
-| Table | Deskripsi |
+| Tabel | Deskripsi |
 |-------|-----------|
 | `users` | Akun pengguna |
 | `organizations` | Organisasi/perusahaan |
 | `devices` | Perangkat GPS |
 | `locations` | History lokasi GPS |
 | `geofences` | Zona virtual |
-| `geofence_devices` | Relasi geofence ↔ device |
+| `geofence_devices` | Relasi geofence dan device |
 | `alerts` | Riwayat peringatan |
 | `trips` | Riwayat perjalanan |
 
 ---
 
-## Menjalankan Aplikasi
+## Deployment ke VPS
 
-### Development
+### Opsi A: PM2 (Recommended)
 
-```bash
-pnpm dev
-```
+PM2 adalah process manager untuk Node.js yang menjaga aplikasi tetap berjalan dan restart otomatis.
 
-Aplikasi berjalan di `http://localhost:3000` dengan hot-reload.
-
-### Production Build
-
-```bash
-# Build
-pnpm build
-
-# Start
-pnpm start
-```
-
-### Perintah Lain
-
-```bash
-# Type checking
-pnpm build 2>&1 | grep "Type error"
-
-# Generate Prisma client
-pnpm prisma generate
-
-# Lihat schema database
-pnpm prisma studio
-```
-
----
-
-## Deploy ke VPS (Production)
-
-### Option A: PM2 (Recommended)
-
-PM2 adalah process manager untuk Node.js yang menjaga aplikasi tetap berjalan.
-
-#### 1. Install PM2
+#### Install PM2
 
 ```bash
 npm install -g pm2
 ```
 
-#### 2. Build Aplikasi
+#### Build dan Deploy
 
 ```bash
 cd /opt/traceflow
@@ -357,50 +302,29 @@ pnpm prisma migrate deploy
 pnpm build
 ```
 
-#### 3. Buat PM2 Config
+#### Konfigurasi PM2
 
-Buat file `ecosystem.config.js` di root project:
-
-```javascript
-module.exports = {
-  apps: [{
-    name: 'traceflow',
-    script: 'node_modules/.bin/next',
-    args: 'start',
-    cwd: '/opt/traceflow',
-    instances: 1,
-    autorestart: true,
-    watch: false,
-    max_memory_restart: '1G',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 3000,
-    },
-  }],
-};
-```
-
-#### 4. Start dengan PM2
+File `ecosystem.config.js` sudah disediakan di root project. Jalankan:
 
 ```bash
 pm2 start ecosystem.config.js
 pm2 save
-pm2 startup  # Auto-start saat server reboot
+pm2 startup
 ```
 
-#### 5. PM2 Commands
+#### Perintah PM2
 
-```bash
-pm2 status          # Cek status
-pm2 logs traceflow  # Lihat log
-pm2 restart traceflow  # Restart
-pm2 stop traceflow  # Stop
-pm2 monit           # Monitor real-time
-```
+| Perintah | Fungsi |
+|----------|--------|
+| `pm2 status` | Cek status aplikasi |
+| `pm2 logs traceflow` | Lihat log |
+| `pm2 restart traceflow` | Restart aplikasi |
+| `pm2 stop traceflow` | Stop aplikasi |
+| `pm2 monit` | Monitor real-time |
 
-### Option B: Systemd Service
+### Opsi B: Systemd Service
 
-#### 1. Buat Service File
+#### Buat Service File
 
 ```bash
 sudo nano /etc/systemd/system/traceflow.service
@@ -425,42 +349,33 @@ Environment=PORT=3000
 WantedBy=multi-user.target
 ```
 
-#### 2. Set Permissions
+#### Aktifkan Service
 
 ```bash
 sudo chown -R www-data:www-data /opt/traceflow
-sudo chmod 644 /etc/systemd/system/traceflow.service
-```
-
-#### 3. Enable & Start
-
-```bash
 sudo systemctl daemon-reload
 sudo systemctl enable traceflow
 sudo systemctl start traceflow
-sudo systemctl status traceflow
 ```
 
-#### 4. Systemd Commands
+#### Perintah Systemd
 
-```bash
-sudo systemctl status traceflow   # Status
-sudo systemctl restart traceflow  # Restart
-sudo systemctl stop traceflow     # Stop
-journalctl -u traceflow -f        # Lihat log
-```
+| Perintah | Fungsi |
+|----------|--------|
+| `sudo systemctl status traceflow` | Cek status |
+| `sudo systemctl restart traceflow` | Restart |
+| `sudo systemctl stop traceflow` | Stop |
+| `journalctl -u traceflow -f` | Lihat log |
 
 ### Nginx Reverse Proxy
 
-Install Nginx sebagai reverse proxy dengan SSL:
-
-#### 1. Install Nginx & Certbot
+#### Install Nginx dan Certbot
 
 ```bash
 sudo apt install -y nginx certbot python3-certbot-nginx
 ```
 
-#### 2. Buat Nginx Config
+#### Konfigurasi Nginx
 
 ```bash
 sudo nano /etc/nginx/sites-available/traceflow
@@ -484,7 +399,6 @@ server {
         proxy_read_timeout 86400;
     }
 
-    # Socket.IO support
     location /api/socketio {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -498,22 +412,17 @@ server {
 }
 ```
 
-#### 3. Enable Site & SSL
+#### Aktifkan SSL
 
 ```bash
-# Enable site
 sudo ln -s /etc/nginx/sites-available/traceflow /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
-
-# Install SSL (Let's Encrypt)
 sudo certbot --nginx -d domain-anda.com
-
-# Auto-renewal test
 sudo certbot renew --dry-run
 ```
 
-#### 4. Firewall
+#### Firewall
 
 ```bash
 sudo ufw allow 22/tcp
@@ -522,73 +431,53 @@ sudo ufw allow 443/tcp
 sudo ufw enable
 ```
 
-### Full Deployment Script
+### Deploy Script
 
-Simpan sebagai `deploy.sh`:
+Gunakan script berikut untuk update production:
 
 ```bash
 #!/bin/bash
 set -e
-
-echo "🚀 Deploying TraceFlow..."
-
 cd /opt/traceflow
-
-# Pull latest code
 git pull origin main
-
-# Install dependencies
 pnpm install
-
-# Generate Prisma client
 pnpm prisma generate
-
-# Run migrations
 pnpm prisma migrate deploy
-
-# Build
 pnpm build
-
-# Restart PM2
 pm2 restart traceflow
-
-echo "✅ Deploy complete!"
 ```
 
-```bash
-chmod +x deploy.sh
-./deploy.sh
-```
+Simpan sebagai `deploy.sh` dan jalankan `chmod +x deploy.sh`.
 
 ---
 
-## Setup GPS Provider
+## Integrasi GPS Provider
 
-### 1. Tambah Perangkat di Dashboard
+### Langkah Penyiapan
 
-1. Buka menu **Perangkat** → **Tambah Perangkat**
+1. Tambah perangkat di menu **Perangkat** > **Tambah Perangkat**
 2. Pilih provider (Teltonika / Queclink / Concox / Mock)
 3. Isi IMEI atau Device ID
-4. Simpan
+4. Konfigurasi GPS tracker fisik untuk mengirim data ke endpoint webhook
 
-### 2. Konfigurasi GPS Tracker
-
-Setelah perangkat dibuat, konfigurasi GPS tracker fisik untuk mengirim data ke:
+### Endpoint Webhook
 
 ```
 POST https://domain-anda.com/api/gps-webhook
 ```
 
-**Headers:**
+### Headers
+
 ```
 Authorization: Bearer <WEBHOOK_SECRET>
 Content-Type: application/json
-x-gps-provider: TELTONIKA
+x-gps-provider: TELTONIKA | QUECLINK | CONCOX | MOCK
 ```
 
-### 3. Webhook Payload Format
+### Format Payload
 
 **Teltonika:**
+
 ```json
 {
   "imei": "123456789012345",
@@ -602,6 +491,7 @@ x-gps-provider: TELTONIKA
 ```
 
 **Queclink:**
+
 ```json
 {
   "device_id": "123456789012345",
@@ -618,6 +508,7 @@ x-gps-provider: TELTONIKA
 ```
 
 **API JSON Push (Generic):**
+
 ```json
 {
   "deviceId": "device-001",
@@ -627,29 +518,23 @@ x-gps-provider: TELTONIKA
 }
 ```
 
-### 4. Testing dengan cURL
+### Testing dengan cURL
 
 ```bash
 curl -X POST https://domain-anda.com/api/gps-webhook \
   -H "Authorization: Bearer YOUR_WEBHOOK_SECRET" \
   -H "Content-Type: application/json" \
   -H "x-gps-provider: MOCK" \
-  -d '{
-    "deviceId": "device-001",
-    "lat": -6.2088,
-    "lng": 106.8456,
-    "speed": 35
-  }'
+  -d '{"deviceId":"device-001","lat":-6.2088,"lng":106.8456,"speed":35}'
 ```
 
-### 5. Testing dengan GPS HP
+### Testing dengan GPS HP
 
-1. Buka menu **Perangkat** → **Tambah Perangkat**
+1. Buka menu **Perangkat** > **Tambah Perangkat**
 2. Pilih metode **GPS HP**
-3. Isi nama perangkat
-4. Klik **Simpan & Aktifkan GPS**
-5. Izinkan lokasi di browser HP
-6. Data akan masuk secara real-time
+3. Isi nama perangkat, klik **Simpan & Aktifkan GPS**
+4. Izinkan lokasi di browser HP
+5. Data akan masuk secara real-time ke peta
 
 ---
 
@@ -657,80 +542,98 @@ curl -X POST https://domain-anda.com/api/gps-webhook \
 
 ### Akun Demo
 
-Setelah seed database, gunakan akun demo:
+Setelah menjalankan seed database:
 
-```
-Email:    admin@traceflow.com
-Password: admin112233
-```
+| Field | Nilai |
+|-------|-------|
+| Email | `admin@traceflow.com` |
+| Password | `admin112233` |
 
-### Halaman Utama
+### Daftar Halaman
 
 | Halaman | Fungsi |
 |---------|--------|
-| **Dashboard** | Statistik overview, peringatan terbaru |
-| **Peta Live** | Tracking real-time di peta |
-| **Perangkat** | Kelola perangkat GPS |
-| **Geofence** | Kelola zona virtual |
-| **Peringatan** | Daftar semua peringatan |
-| **Perjalanan** | Riwayat perjalanan + playback |
-| **Laporan** | Analitik dan export data |
-| **Pengaturan** | Profil dan organisasi |
+| Dashboard | Statistik overview, peringatan terbaru |
+| Peta Live | Tracking real-time di peta |
+| Perangkat | Kelola perangkat GPS |
+| Geofence | Kelola zona virtual |
+| Peringatan | Daftar semua peringatan |
+| Perjalanan | Riwayat perjalanan dan playback |
+| Laporan | Analitik dan export data |
+| Pengaturan | Profil dan organisasi |
 
-### Alur Kerja
+### Alur Kerja Standar
 
 ```
-1. Tambah Perangkat → 2. Setup GPS Tracker → 3. Data Masuk
-→ 4. Pantau di Peta → 5. Buat Geofence → 6. Terima Peringatan
-→ 7. Lihat Laporan → 8. Export Data
+Tambah Perangkat > Setup GPS Tracker > Data Masuk
+> Pantau di Peta > Buat Geofence > Terima Peringatan
+> Lihat Laporan > Export Data
 ```
 
 ---
 
 ## API Reference
 
-### Authentication
+### Autentikasi
 
-Semua API (kecuali GPS webhook) memerlukan session login via NextAuth.
+Semua endpoint API (kecuali GPS webhook) memerlukan session login via NextAuth.
 
 ### tRPC Endpoints
 
 Base URL: `/api/trpc/`
 
-**Device:**
-- `device.list` — List semua perangkat
-- `device.getById` — Detail perangkat
-- `device.create` — Buat perangkat (Manager+)
-- `device.update` — Edit perangkat (Manager+)
-- `device.delete` — Hapus perangkat (Manager+)
+**Device**
 
-**Location:**
-- `location.getLatest` — Lokasi terbaru semua perangkat
-- `location.getHistory` — History lokasi per perangkat
-- `location.getByTrip` — Lokasi per perjalanan
-- `location.pushFromPhone` — Push lokasi dari HP
+| Endpoint | Fungsi | Akses |
+|----------|--------|-------|
+| `device.list` | List semua perangkat | Semua role |
+| `device.getById` | Detail perangkat | Semua role |
+| `device.create` | Buat perangkat | Manager+ |
+| `device.update` | Edit perangkat | Manager+ |
+| `device.delete` | Hapus perangkat | Manager+ |
 
-**Geofence:**
-- `geofence.list` — List semua geofence
-- `geofence.getById` — Detail geofence
-- `geofence.create` — Buat geofence (Manager+)
-- `geofence.update` — Edit geofence + assign perangkat (Manager+)
-- `geofence.delete` — Hapus geofence (Manager+)
+**Location**
 
-**Alert:**
-- `alert.list` — List peringatan (paginated, filterable)
-- `alert.getUnreadCount` — Jumlah peringatan belum dibaca
-- `alert.markRead` — Tandai sudah dibaca
-- `alert.markAllRead` — Tandai semua sudah dibaca
-- `alert.delete` — Hapus peringatan
+| Endpoint | Fungsi | Akses |
+|----------|--------|-------|
+| `location.getLatest` | Lokasi terbaru semua perangkat | Semua role |
+| `location.getHistory` | History lokasi per perangkat | Semua role |
+| `location.getByTrip` | Lokasi per perjalanan | Semua role |
+| `location.pushFromPhone` | Push lokasi dari HP | Semua role |
 
-**Trip:**
-- `trip.list` — List perjalanan (filter by device, date)
-- `trip.getById` — Detail perjalanan
+**Geofence**
 
-**Dashboard:**
-- `dashboard.getStats` — Statistik overview
-- `dashboard.getRecentAlerts` — 10 peringatan terbaru
+| Endpoint | Fungsi | Akses |
+|----------|--------|-------|
+| `geofence.list` | List semua geofence | Semua role |
+| `geofence.getById` | Detail geofence | Semua role |
+| `geofence.create` | Buat geofence | Manager+ |
+| `geofence.update` | Edit geofence + assign perangkat | Manager+ |
+| `geofence.delete` | Hapus geofence | Manager+ |
+
+**Alert**
+
+| Endpoint | Fungsi | Akses |
+|----------|--------|-------|
+| `alert.list` | List peringatan (paginated) | Semua role |
+| `alert.getUnreadCount` | Jumlah peringatan belum dibaca | Semua role |
+| `alert.markRead` | Tandai sudah dibaca | Semua role |
+| `alert.markAllRead` | Tandai semua sudah dibaca | Semua role |
+| `alert.delete` | Hapus peringatan | Semua role |
+
+**Trip**
+
+| Endpoint | Fungsi | Akses |
+|----------|--------|-------|
+| `trip.list` | List perjalanan | Semua role |
+| `trip.getById` | Detail perjalanan | Semua role |
+
+**Dashboard**
+
+| Endpoint | Fungsi | Akses |
+|----------|--------|-------|
+| `dashboard.getStats` | Statistik overview | Semua role |
+| `dashboard.getRecentAlerts` | 10 peringatan terbaru | Semua role |
 
 ### GPS Webhook
 
@@ -740,75 +643,60 @@ Authorization: Bearer <WEBHOOK_SECRET>
 x-gps-provider: TELTONIKA | QUECLINK | CONCOX | MOCK
 ```
 
-### Role Hierarchy
+### Hierarki Role
 
 | Role | Akses |
 |------|-------|
-| **ADMIN** | Semua fitur + manajemen user |
-| **MANAGER** | CRUD perangkat, geofence, organisasi |
-| **VIEWER** | Read-only (lihat data, tidak bisa ubah) |
+| ADMIN | Semua fitur + manajemen user |
+| MANAGER | CRUD perangkat, geofence, organisasi |
+| VIEWER | Read-only (lihat data, tidak bisa ubah) |
 
 ---
 
 ## Troubleshooting
 
-### Aplikasi tidak bisa diakses
+### Aplikasi Tidak Bisa Diakses
 
 ```bash
-# Cek status service
-sudo systemctl status traceflow  # atau pm2 status
-
-# Cek log
-journalctl -u traceflow -f  # atau pm2 logs traceflow
-
-# Cek port
+sudo systemctl status traceflow
+journalctl -u traceflow -f
 sudo lsof -i :3000
 ```
 
-### Database connection error
+### Database Connection Error
 
 ```bash
-# Cek PostgreSQL berjalan
 sudo systemctl status postgresql
-
-# Test koneksi
 psql -U traceflow -d traceflow -c "SELECT 1;"
-
-# Cek DATABASE_URL di .env
 cat .env | grep DATABASE_URL
 ```
 
-### Prisma migration error
+### Prisma Migration Error
 
 ```bash
-# Reset database (WARNING: hapus semua data)
 pnpm prisma migrate reset
-
-# Generate ulang Prisma client
 pnpm prisma generate
-
-# Jalankan migrasi ulang
 pnpm prisma migrate dev
 ```
 
-### GPS data tidak masuk
+### GPS Data Tidak Masuk
 
-1. Cek webhook URL benar: `https://domain-anda.com/api/gps-webhook`
-2. Cek `WEBHOOK_SECRET` di `.env` sama dengan yang di header
-3. Cek `x-gps-provider` header sesuai provider
-4. Cek IMEI/device ID cocok dengan yang di dashboard
-5. Cek log server untuk error
+1. Verifikasi webhook URL: `https://domain-anda.com/api/gps-webhook`
+2. Pastikan `WEBHOOK_SECRET` di `.env` cocok dengan header `Authorization`
+3. Pastikan header `x-gps-provider` sesuai dengan provider yang dipilih
+4. Pastikan IMEI/Device ID cocok dengan yang terdaftar di dashboard
+5. Cek log server untuk pesan error
 
-### Map tidak muncul
+### Peta Tidak Muncul
 
-1. Cek koneksi internet (OpenStreetMap tiles perlu internet)
-2. Cek browser console untuk error
-3. Pastikan device punya koordinat (`lastLatitude`, `lastLongitude`)
+1. Pastikan koneksi internet aktif (OpenStreetMap tiles memerlukan internet)
+2. Cek browser console untuk error JavaScript
+3. Pastikan perangkat memiliki koordinat (`lastLatitude`, `lastLongitude`)
 
-### Socket.IO tidak connect
+### Socket.IO Tidak Connect
 
-1. Cek Nginx config untuk WebSocket support
-2. Cek `/api/socketio` path tidak di-block
+1. Pastikan Nginx dikonfigurasi untuk WebSocket support
+2. Pastikan path `/api/socketio` tidak di-block
 3. Cek browser console untuk connection error
 
 ---
@@ -818,54 +706,40 @@ pnpm prisma migrate dev
 ```
 traceflow/
 ├── prisma/
-│   ├── schema.prisma          # Database schema
-│   ├── seed-demo.ts           # Seed data demo
-│   └── migrations/            # Database migrations
-├── public/                    # Static assets
+│   ├── schema.prisma
+│   ├── seed-demo.ts
+│   └── migrations/
+├── public/
 ├── src/
 │   ├── app/
-│   │   ├── (auth)/            # Login, Register (tanpa sidebar)
-│   │   ├── (dashboard)/       # Semua halaman dashboard (dengan sidebar)
-│   │   │   ├── alerts/        # Halaman peringatan
-│   │   │   ├── devices/       # Halaman perangkat
-│   │   │   ├── geofences/     # Halaman geofence
-│   │   │   ├── map/           # Halaman peta live
-│   │   │   ├── reports/       # Halaman laporan
-│   │   │   ├── settings/      # Halaman pengaturan
-│   │   │   └── trips/         # Halaman perjalanan
+│   │   ├── (auth)/              # Login, Register
+│   │   ├── (dashboard)/         # Halaman dashboard
+│   │   │   ├── alerts/
+│   │   │   ├── devices/
+│   │   │   ├── geofences/
+│   │   │   ├── map/
+│   │   │   ├── reports/
+│   │   │   ├── settings/
+│   │   │   └── trips/
 │   │   └── api/
-│   │       ├── auth/          # NextAuth API routes
-│   │       ├── gps-webhook/   # GPS webhook endpoint
-│   │       ├── socketio/      # Socket.IO server
-│   │       └── trpc/          # tRPC API handler
+│   │       ├── auth/
+│   │       ├── gps-webhook/
+│   │       ├── socketio/
+│   │       └── trpc/
 │   ├── components/
-│   │   ├── layout/            # Sidebar, Header
-│   │   ├── map/               # MapView, TripPlayback
-│   │   └── ui/                # shadcn/ui components
-│   ├── hooks/                 # Custom React hooks
-│   │   ├── use-socket.ts      # Socket.IO hooks
-│   │   └── use-device-location.ts
+│   │   ├── layout/
+│   │   ├── map/
+│   │   └── ui/
+│   ├── hooks/
 │   ├── lib/
-│   │   ├── api-provider.ts    # tRPC client setup
-│   │   ├── auth.ts            # NextAuth configuration
-│   │   ├── prisma.ts          # Prisma client singleton
-│   │   ├── socket.ts          # Socket.IO server singleton
-│   │   ├── export.ts          # CSV export utilities
-│   │   └── reports.ts         # Report generation
 │   ├── server/
-│   │   ├── api/
-│   │   │   ├── routers/       # tRPC routers
-│   │   │   ├── root.ts        # Root router
-│   │   │   └── trpc.ts        # tRPC context & middleware
+│   │   ├── api/routers/
 │   │   └── gps/
-│   │       ├── ingest.ts      # GPS data ingestion + geofence check
-│   │       └── adapters/      # Provider adapters (mock, teltonika, etc)
-│   └── types/                 # TypeScript type definitions
-├── .env.example               # Environment template
-├── ecosystem.config.js        # PM2 config (production)
-├── next.config.ts             # Next.js config
+│   └── types/
+├── .env.example
+├── ecosystem.config.js
+├── next.config.ts
 ├── package.json
-├── tailwind.config.ts
 └── tsconfig.json
 ```
 
@@ -873,14 +747,12 @@ traceflow/
 
 ## Lisensi
 
-Proprietary — [noHype Labs](https://github.com/nohypelabs)
-
-Dilarang mendistribusikan, menjual kembali, atau membuka source code ini tanpa izin tertulis.
+Proprietary. Dilarang mendistribusikan, menjual kembali, atau membuka source code ini tanpa izin tertulis dari pemegang lisensi.
 
 ---
 
 <div align="center">
 
-**📍 TraceFlow — Real-Time GPS Fleet Tracking**
+**TraceFlow** -- Real-Time GPS Fleet Tracking
 
 </div>
