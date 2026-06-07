@@ -2,6 +2,7 @@
 
 import type { Device } from '@/types';
 import { useState } from 'react';
+import Link from 'next/link';
 import { api } from '@/lib/api-provider';
 import {
   AlertTriangle,
@@ -12,6 +13,7 @@ import {
   Plus,
   Radio,
   Send,
+  Smartphone,
   Trash2,
   Webhook,
   Wifi,
@@ -22,7 +24,11 @@ import { PageWrapper, CyberCard, NeonButton } from '@/components/ui/page-wrapper
 import { Button } from '@/components/ui/button';
 import { exportDevicesToCSV } from '@/lib/export';
 
-type IntegrationMethod = 'TRACKER_WEBHOOK' | 'API_PUSH' | 'MOCK';
+type IntegrationMethod =
+  | 'TRACKER_WEBHOOK'
+  | 'API_PUSH'
+  | 'PHONE_GPS'
+  | 'MOCK';
 type GpsProvider = 'TELTONIKA' | 'QUECLINK' | 'CONCOX' | 'MOCK';
 type VehicleType = 'CAR' | 'TRUCK' | 'MOTORCYCLE' | 'VAN' | 'BUS' | 'OTHER';
 
@@ -40,6 +46,7 @@ interface CreateDeviceInput {
 }
 
 interface CreatedIntegration {
+  deviceId: string;
   name: string;
   identifier: string;
   provider: GpsProvider;
@@ -67,6 +74,7 @@ export default function DevicesPage() {
     onSuccess: async (device, variables) => {
       await utils.device.list.invalidate();
       setCreatedIntegration({
+        deviceId: device.id,
         name: device.name,
         identifier: device.imei,
         provider: device.provider,
@@ -97,6 +105,13 @@ export default function DevicesPage() {
 
   const primaryAction = (
     <div className="flex gap-2">
+      <Link
+        href="/phone-tracker"
+        className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-violet-400/25 bg-violet-500/10 px-3 text-sm font-medium text-violet-100 transition hover:bg-violet-500/20"
+      >
+        <Smartphone className="h-4 w-4" />
+        <span className="hidden md:inline">Tes GPS HP</span>
+      </Link>
       <Button
         variant="outline"
         size="default"
@@ -375,7 +390,11 @@ function CreateDeviceForm({
   };
 
   const identifierLabel =
-    method === 'TRACKER_WEBHOOK' ? 'IMEI / DEVICE ID' : 'API DEVICE ID';
+    method === 'TRACKER_WEBHOOK'
+      ? 'IMEI / DEVICE ID'
+      : method === 'PHONE_GPS'
+        ? 'DEVICE ID HP'
+        : 'API DEVICE ID';
 
   return (
     <SlideUp>
@@ -385,7 +404,7 @@ function CreateDeviceForm({
           Pilih jalur data yang benar-benar akan dipakai perangkat untuk mengirim lokasi.
         </p>
 
-        <div className="mb-5 grid gap-3 md:grid-cols-3">
+        <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <MethodCard
             active={method === 'TRACKER_WEBHOOK'}
             icon={<Radio className="h-5 w-5" />}
@@ -399,6 +418,13 @@ function CreateDeviceForm({
             title="API JSON Push"
             description="Aplikasi atau gateway mengirim JSON standar ke TraceFlow."
             onClick={() => selectMethod('API_PUSH')}
+          />
+          <MethodCard
+            active={method === 'PHONE_GPS'}
+            icon={<Smartphone className="h-5 w-5" />}
+            title="GPS HP"
+            description="Gunakan lokasi browser HP sebagai tracker sementara."
+            onClick={() => selectMethod('PHONE_GPS')}
           />
           <MethodCard
             active={method === 'MOCK'}
@@ -429,7 +455,13 @@ function CreateDeviceForm({
                 value={form.identifier}
                 onChange={(event) => setForm({ ...form, identifier: event.target.value })}
                 className={`${inputClass} font-mono`}
-                placeholder={method === 'TRACKER_WEBHOOK' ? '123456789012345' : 'fleet-gateway-01'}
+                placeholder={
+                  method === 'TRACKER_WEBHOOK'
+                    ? '123456789012345'
+                    : method === 'PHONE_GPS'
+                      ? 'phone-tracker-01'
+                      : 'fleet-gateway-01'
+                }
                 required
                 minLength={3}
                 maxLength={100}
@@ -568,6 +600,21 @@ function MethodNotice({
     );
   }
 
+  if (method === 'PHONE_GPS') {
+    return (
+      <div className="rounded-xl border border-violet-500/20 bg-violet-950/20 p-4 text-sm text-violet-100">
+        <div className="flex items-center gap-2 font-medium">
+          <Smartphone className="h-4 w-4" />
+          Browser GPS tracker
+        </div>
+        <p className="mt-1 text-xs leading-relaxed text-violet-100/80">
+          Setelah disimpan, buka halaman GPS HP menggunakan HTTPS, pilih device ini,
+          lalu izinkan akses lokasi. Webhook secret tidak dikirim ke browser.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-xl border border-violet-500/20 bg-violet-950/20 p-4 text-sm text-violet-100">
       <div className="flex items-center gap-2 font-medium">
@@ -589,6 +636,33 @@ function IntegrationGuide({
   integration: CreatedIntegration;
   onClose: () => void;
 }) {
+  if (integration.method === 'PHONE_GPS') {
+    return (
+      <CyberCard className="mb-4 border-emerald-500/25 bg-emerald-950/20 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 font-medium text-emerald-200">
+              <CheckCircle2 className="h-5 w-5" />
+              {integration.name} berhasil disimpan
+            </div>
+            <p className="mt-1 text-sm text-zinc-200">
+              Buka tracker di HP, izinkan lokasi, lalu tekan Mulai Tracking.
+            </p>
+          </div>
+          <Button type="button" variant="ghost" size="sm" onClick={onClose}>Tutup</Button>
+        </div>
+
+        <Link
+          href={`/phone-tracker?deviceId=${integration.deviceId}`}
+          className="mt-4 inline-flex items-center gap-2 rounded-lg border border-violet-400/30 bg-violet-500/15 px-4 py-2.5 text-sm font-medium text-violet-100 transition hover:bg-violet-500/25"
+        >
+          <Smartphone className="h-4 w-4" />
+          Buka GPS HP
+        </Link>
+      </CyberCard>
+    );
+  }
+
   const isNativeTracker = integration.method === 'TRACKER_WEBHOOK';
   const sampleBody = isNativeTracker
     ? getProviderPayload(integration.provider, integration.identifier)

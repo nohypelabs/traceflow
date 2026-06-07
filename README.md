@@ -259,10 +259,23 @@ Password: admin112233
 3. Pilih metode integrasi:
    - **GPS Tracker** untuk payload native Teltonika, Queclink, atau Concox
    - **API JSON Push** untuk aplikasi/gateway dengan payload standar TraceFlow
+   - **GPS HP** untuk memakai browser smartphone sebagai tracker sementara
    - **Mock / Testing** untuk simulator lokal
 4. Isi nama, IMEI/Device ID unik, serta data kendaraan
 5. Klik **Simpan Perangkat**
 6. Gunakan request guide yang muncul untuk mengirim lokasi pertama
+
+### Testing dengan GPS HP
+
+1. Tambahkan perangkat menggunakan metode **GPS HP**
+2. Buka `/phone-tracker` dari deployment HTTPS melalui HP
+3. Login, pilih device, lalu tekan **Mulai Tracking**
+4. Izinkan lokasi presisi dan biarkan halaman tetap terbuka
+5. Pantau posisi yang masuk melalui halaman **Peta Live**
+
+GPS browser dapat dihentikan oleh sistem ketika layar terkunci, tab ditutup, atau
+mode hemat baterai aktif. Jalur ini ditujukan untuk testing, bukan tracking
+background permanen.
 
 ### Membuat Geofence
 

@@ -1,5 +1,6 @@
 import { createTRPCRouter, TRPCError, protectedProcedure } from '@/server/api/trpc';
 import { prisma } from '@/lib/prisma';
+import { ingestGpsLocation } from '@/server/gps/ingest';
 import { z } from 'zod';
 
 /**
@@ -26,6 +27,69 @@ async function verifyDeviceOrgAccess(deviceId: string, orgId: string | null): Pr
 }
 
 export const locationRouter = createTRPCRouter({
+  pushFromPhone: protectedProcedure
+    .input(
+      z.object({
+        deviceId: z.string().min(1),
+        latitude: z.number().finite().min(-90).max(90),
+        longitude: z.number().finite().min(-180).max(180),
+        altitude: z.number().finite().nullable().optional(),
+        accuracy: z.number().finite().min(0).max(10000).nullable().optional(),
+        speed: z.number().finite().min(0).max(1000).nullable().optional(),
+        heading: z.number().finite().min(0).max(360).nullable().optional(),
+        recordedAt: z.date(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const orgId = ctx.session.user.organizationId;
+
+      if (!orgId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'No organization' });
+      }
+
+      const device = await prisma.device.findUnique({
+        where: { id: input.deviceId },
+        select: {
+          id: true,
+          imei: true,
+          provider: true,
+          organizationId: true,
+        },
+      });
+
+      if (!device) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Device not found' });
+      }
+
+      if (device.organizationId !== orgId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
+      if (device.provider !== 'MOCK') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'GPS HP hanya dapat dipakai pada device GPS HP, API Push, atau Mock',
+        });
+      }
+
+      await ingestGpsLocation(device.id, {
+        deviceId: device.imei,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        altitude: input.altitude ?? undefined,
+        accuracy: input.accuracy ?? undefined,
+        speed: input.speed ?? undefined,
+        heading: input.heading ?? undefined,
+        ignition: true,
+        timestamp: input.recordedAt,
+      });
+
+      return {
+        success: true,
+        recordedAt: input.recordedAt,
+      };
+    }),
+
   getLatest: protectedProcedure.query(async ({ ctx }) => {
     const orgId = ctx.session.user.organizationId;
 

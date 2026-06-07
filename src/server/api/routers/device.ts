@@ -3,7 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { Prisma } from '@/generated/prisma/client';
 
-const integrationModeSchema = z.enum(['TRACKER_WEBHOOK', 'API_PUSH', 'MOCK']);
+const integrationModeSchema = z.enum([
+  'TRACKER_WEBHOOK',
+  'API_PUSH',
+  'PHONE_GPS',
+  'MOCK',
+]);
 
 const providerConfigSchema = z
   .object({
