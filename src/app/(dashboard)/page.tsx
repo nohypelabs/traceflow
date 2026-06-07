@@ -125,7 +125,7 @@ export default function DashboardPage() {
           <div className="space-y-4">
             <div className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="relative overflow-hidden rounded-2xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/70 dark:bg-zinc-950/70 bg-white/80 p-5 md:p-6">
+                <div key={i} className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-950/70 p-5 md:p-6">
                   <div className="flex justify-between mb-3">
                     <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
                     <div className="h-4 w-4 bg-white/10 rounded animate-pulse" />
@@ -137,7 +137,7 @@ export default function DashboardPage() {
             </div>
             <div className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="relative overflow-hidden rounded-2xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/70 dark:bg-zinc-950/70 bg-white/80 p-5 md:p-6">
+                <div key={i} className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-950/70 p-5 md:p-6">
                   <div className="flex justify-between mb-3">
                     <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
                     <div className="h-4 w-4 bg-white/10 rounded animate-pulse" />
@@ -151,8 +151,8 @@ export default function DashboardPage() {
 
           {/* Bottom panels skeleton */}
           <div className="grid gap-4 md:grid-cols-2 md:gap-6">
-            <div className="rounded-2xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/70 dark:bg-zinc-950/70 bg-white/80 h-72 animate-pulse" />
-            <div className="rounded-2xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/70 dark:bg-zinc-950/70 bg-white/80 h-72 animate-pulse" />
+            <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-950/70 h-72 animate-pulse" />
+            <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-950/70 h-72 animate-pulse" />
           </div>
         </div>
       </div>
@@ -174,8 +174,8 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <div className="text-2xl font-semibold tracking-tight text-white dark:text-white text-zinc-900 md:text-[28px]">Dashboard</div>
-                <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/10 dark:border-white/10 border-zinc-200 bg-white/[0.02] dark:bg-white/[0.02] bg-zinc-100 px-2.5 py-0.5 text-[10px] uppercase tracking-[2px] text-emerald-400/90">
+                <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white md:text-[28px]">Dashboard</div>
+                <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/[0.02] px-2.5 py-0.5 text-[10px] uppercase tracking-[2px] text-emerald-400/90">
                   <div className={`h-1.5 w-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`} />
                   {isConnected ? 'LIVE' : 'OFFLINE'}
                 </div>
@@ -195,7 +195,7 @@ export default function DashboardPage() {
               </NeonGlow>
             </Link>
             <Link href="/alerts">
-              <button className="flex h-9 items-center gap-2 rounded-xl border border-white/15 dark:border-white/15 border-zinc-200 bg-white/5 dark:bg-white/5 bg-zinc-100 px-4 text-sm font-medium text-zinc-200 dark:text-zinc-200 text-zinc-700 transition hover:bg-white/10 dark:hover:bg-white/10 hover:bg-zinc-200 hover:text-white dark:hover:text-white hover:text-zinc-900 active:scale-[0.985]">
+              <button className="flex h-9 items-center gap-2 rounded-xl border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 px-4 text-sm font-medium text-zinc-700 dark:text-zinc-200 transition hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white active:scale-[0.985]">
                 <Bell className="h-4 w-4" />
                 <span>Peringatan</span>
                 <span className="ml-0.5 rounded-full bg-red-500/90 px-1.5 py-px text-[10px] font-mono tabular-nums text-white">
@@ -213,10 +213,10 @@ export default function DashboardPage() {
             <AnimatedBorder>
               <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
-                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400 dark:text-zinc-400 text-zinc-500">TOTAL PERANGKAT</div>
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-500 dark:text-zinc-400">TOTAL PERANGKAT</div>
                   <MapPin className="h-4 w-4 text-blue-400" />
                 </div>
-                <div className="font-mono text-3xl font-semibold tracking-tighter text-white dark:text-white text-zinc-900 md:text-[36px]">
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-zinc-900 dark:text-white md:text-[36px]">
                   28
                 </div>
                 <div className="mt-2 h-8 flex items-center">
@@ -236,7 +236,7 @@ export default function DashboardPage() {
             <AnimatedBorder>
               <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
-                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400 dark:text-zinc-400 text-zinc-500">LIVE / ONLINE</div>
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-500 dark:text-zinc-400">LIVE / ONLINE</div>
                   <Wifi className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-emerald-400 md:text-[36px]">
@@ -258,10 +258,10 @@ export default function DashboardPage() {
             <AnimatedBorder>
               <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
-                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400 dark:text-zinc-400 text-zinc-500">OFFLINE</div>
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-500 dark:text-zinc-400">OFFLINE</div>
                   <WifiOff className="h-4 w-4 text-zinc-400" />
                 </div>
-                <div className="font-mono text-3xl font-semibold tracking-tighter text-zinc-400 dark:text-zinc-400 text-zinc-500 md:text-[36px]">
+                <div className="font-mono text-3xl font-semibold tracking-tighter text-zinc-500 dark:text-zinc-400 md:text-[36px]">
                   2
                 </div>
                 <div className="mt-2 h-8 flex items-center">
@@ -271,7 +271,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400">Terakhir: 47 menit lalu</div>
+                <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">Terakhir: 47 menit lalu</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
@@ -281,7 +281,7 @@ export default function DashboardPage() {
             <AnimatedBorder>
               <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
-                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400 dark:text-zinc-400 text-zinc-500">PERJALANAN HARI INI</div>
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-500 dark:text-zinc-400">PERJALANAN HARI INI</div>
                   <TrendingUp className="h-4 w-4 text-yellow-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-yellow-400 md:text-[36px]">
@@ -308,7 +308,7 @@ export default function DashboardPage() {
             <AnimatedBorder>
               <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
-                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400 dark:text-zinc-400 text-zinc-500">JARAK HARI INI</div>
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-500 dark:text-zinc-400">JARAK HARI INI</div>
                   <Zap className="h-4 w-4 text-cyan-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-cyan-400 md:text-[36px]"
@@ -335,7 +335,7 @@ export default function DashboardPage() {
             <AnimatedBorder>
               <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
-                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400 dark:text-zinc-400 text-zinc-500">KECEPATAN AVG</div>
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-500 dark:text-zinc-400">KECEPATAN AVG</div>
                   <TrendingUp className="h-4 w-4 text-purple-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-purple-400 md:text-[36px]"
@@ -360,7 +360,7 @@ export default function DashboardPage() {
             <AnimatedBorder>
               <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
-                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400 dark:text-zinc-400 text-zinc-500">UTILISASI FLEET</div>
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-500 dark:text-zinc-400">UTILISASI FLEET</div>
                   <Activity className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-emerald-400 md:text-[36px]"
@@ -387,7 +387,7 @@ export default function DashboardPage() {
             <AnimatedBorder>
               <div className="p-5 md:p-6 min-h-[155px]">
                 <div className="mb-2.5 flex items-center justify-between">
-                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400 dark:text-zinc-400 text-zinc-500">GEOFENCE AKTIF</div>
+                  <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-500 dark:text-zinc-400">GEOFENCE AKTIF</div>
                   <Shield className="h-4 w-4 text-amber-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-amber-400 md:text-[36px]"

@@ -27,12 +27,12 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#05070f] dark:bg-[#05070f] bg-white text-white dark:text-white text-zinc-900 flex flex-col">
+    <div className="relative min-h-screen overflow-hidden bg-white dark:bg-[#05070f] text-white dark:text-white text-zinc-900 flex flex-col">
       {/* Full-bleed animated GPS network background (same as dashboard) */}
       <GpsNetworkBackground />
 
       {/* Top branding / system status bar */}
-      <div className="relative z-20 flex items-center justify-between border-b border-white/10 dark:border-white/10 border-zinc-200 bg-black/30 dark:bg-black/30 bg-white/80 px-6 py-3.5 backdrop-blur-xl">
+      <div className="relative z-20 flex items-center justify-between border-b border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-black/30 px-6 py-3.5 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10">
             <MapPin className="h-5 w-5 text-cyan-400" />
@@ -44,7 +44,7 @@ export default function AuthLayout({
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="hidden items-center gap-2 rounded-full border border-white/10 dark:border-white/10 border-zinc-200 bg-white/[0.015] dark:bg-white/[0.015] bg-zinc-100 px-3 py-1 text-[10px] uppercase tracking-[2.5px] text-emerald-400/90 sm:flex">
+          <div className="hidden items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-white/[0.015] px-3 py-1 text-[10px] uppercase tracking-[2.5px] text-emerald-400/90 sm:flex">
             <div className="h-1 w-1 animate-pulse rounded-full bg-emerald-400" />
             SECURE • LIVE NETWORK
           </div>
@@ -60,7 +60,7 @@ export default function AuthLayout({
       </div>
 
       {/* Dashboard-style Footer */}
-      <footer className="relative z-20 border-t border-white/[0.04] dark:border-white/[0.04] border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-zinc-50/80 backdrop-blur-sm px-6 py-3">
+      <footer className="relative z-20 border-t border-zinc-200 dark:border-white/[0.04] bg-zinc-50/80 dark:bg-zinc-950/60 backdrop-blur-sm px-6 py-3">
         {/* Top gradient line */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent" />
 

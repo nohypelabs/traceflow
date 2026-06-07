@@ -38,7 +38,7 @@ export function PageWrapper({
               <span className="font-mono text-lg font-bold tracking-widest text-cyan-400">TF</span>
             </div>
             <div>
-              <div className="text-2xl font-semibold tracking-tight text-white dark:text-white text-zinc-900 md:text-[26px]">{title}</div>
+              <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white md:text-[26px]">{title}</div>
               {subtitle && (
                 <div className="text-[10px] text-zinc-500 tracking-[1.5px] -mt-0.5">{subtitle}</div>
               )}
@@ -69,7 +69,7 @@ export function CyberCard({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/80 dark:bg-zinc-950/80 bg-white/80 shadow-[0_0_0_1px_rgba(255,255,255,0.03)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.03)] shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-2xl ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-950/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.03)] backdrop-blur-2xl ${className}`}
     >
       {/* Holographic gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_15%,rgba(6,182,212,0.06),transparent_55%)]" />
@@ -113,12 +113,12 @@ export function NeonStat({
     <CyberCard className="p-4 md:p-5">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-400 dark:text-zinc-400 text-zinc-500">{label}</div>
+          <div className="text-[10px] font-medium tracking-[1.5px] text-zinc-500 dark:text-zinc-400">{label}</div>
           <div className={`mt-1 font-mono text-3xl font-semibold tracking-tighter md:text-[34px] ${c.text}`}>
             {value}
           </div>
         </div>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${c.accent} bg-white/5 dark:bg-white/5 bg-zinc-100 ${c.text}`}>
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${c.accent} bg-zinc-100 dark:bg-white/5 ${c.text}`}>
           {icon}
         </div>
       </div>

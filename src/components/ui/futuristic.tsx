@@ -51,7 +51,7 @@ export function AnimatedBorder({ children, className = '' }: { children: React.R
       {/* Animated gradient border glow */}
       <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 rounded-2xl blur opacity-25 group-hover:opacity-70 transition duration-700 animate-gradient-x" />
       {/* Glass inner card */}
-      <div className="relative rounded-2xl bg-zinc-950/80 dark:bg-zinc-950/80 bg-white/80 backdrop-blur-xl border border-white/10 dark:border-white/10 border-zinc-200">
+      <div className="relative rounded-2xl bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border border-zinc-200 dark:border-white/10">
         {children}
       </div>
     </div>
@@ -96,9 +96,9 @@ export function GlitchText({ children, className = '' }: { children: React.React
 // Holographic card
 export function HolographicCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`relative overflow-hidden rounded-xl bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-900 dark:to-zinc-800 from-zinc-100 to-zinc-200 p-[1px] ${className}`}>
+    <div className={`relative overflow-hidden rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-900 dark:to-zinc-800 p-[1px] ${className}`}>
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-cyan-500/20 animate-holographic" />
-      <div className="relative rounded-xl bg-zinc-900/90 dark:bg-zinc-900/90 bg-white/90 backdrop-blur-sm">
+      <div className="relative rounded-xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm">
         {children}
       </div>
     </div>

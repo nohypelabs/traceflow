@@ -220,26 +220,27 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Glassmorphism effect */
+/* Glassmorphism effect — light base, dark override */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-:root .glass {
   background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Neon text effect */
-.neon-text {
-  text-shadow: 0 0 7px #3b82f6, 0 0 10px #3b82f6, 0 0 21px #3b82f6, 0 0 42px #2563eb;
+.dark .glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-:root .neon-text {
+/* Neon text effect — light base, dark override */
+.neon-text {
   text-shadow: 0 0 4px rgba(59, 130, 246, 0.3);
   color: #1e40af;
+}
+
+.dark .neon-text {
+  text-shadow: 0 0 7px #3b82f6, 0 0 10px #3b82f6, 0 0 21px #3b82f6, 0 0 42px #2563eb;
+  color: inherit;
 }
 
 /* Cyberpunk-style border */
@@ -248,26 +249,26 @@
   border-image: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4) 1;
 }
 
-/* Scan line overlay */
+/* Scan line overlay — light base, dark override */
 .scan-lines::after {
   content: '';
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(
     0deg,
-    rgba(0, 0, 0, 0.1) 0px,
-    rgba(0, 0, 0, 0.1) 1px,
+    rgba(0, 0, 0, 0.03) 0px,
+    rgba(0, 0, 0, 0.03) 1px,
     transparent 1px,
     transparent 2px
   );
   pointer-events: none;
 }
 
-:root .scan-lines::after {
+.dark .scan-lines::after {
   background: repeating-linear-gradient(
     0deg,
-    rgba(0, 0, 0, 0.03) 0px,
-    rgba(0, 0, 0, 0.03) 1px,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
     transparent 1px,
     transparent 2px
   );
@@ -277,12 +278,12 @@
    Futuristic Auth Form Styles (Login / Register)
    ============================================ */
 
-/* Glass + neon tech input used on auth pages */
+/* Glass + neon tech input used on auth pages — light base, dark override */
 .futuristic-input {
   font-feature-settings: "tnum";
   letter-spacing: 0.01em;
   transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
-  caret-color: #67e8f9;
+  caret-color: #0891b2;
 }
 
 .futuristic-input:focus {
@@ -290,15 +291,15 @@
 }
 
 .futuristic-input::placeholder {
-  color: rgb(113 113 122 / 0.6);
-}
-
-:root .futuristic-input {
-  caret-color: #0891b2;
-}
-
-:root .futuristic-input::placeholder {
   color: rgb(161 161 170 / 0.6);
+}
+
+.dark .futuristic-input {
+  caret-color: #67e8f9;
+}
+
+.dark .futuristic-input::placeholder {
+  color: rgb(113 113 122 / 0.6);
 }
 
 /* Neon action button (gradient + sweep + glow) */
@@ -328,28 +329,33 @@
 .strength-bar {
   height: 3px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(0, 0, 0, 0.08);
   transition: background-color 0.2s ease;
+}
+
+.dark .strength-bar {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ============================================
    Futuristic Dashboard Card Overrides
    ============================================ */
 
-/* Radix UI Card — cyberpunk glassmorphism */
+/* Radix UI Card — light base, dark override */
 .rt-Card {
-  background: rgba(24, 24, 27, 0.6) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   border-radius: 0.75rem;
   position: relative;
   overflow: hidden;
 }
 
-:root .rt-Card {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+.dark .rt-Card {
+  background: rgba(24, 24, 27, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: none;
 }
 
 /* Top accent glow line on cards */
@@ -360,30 +366,30 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.25), transparent);
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.15), transparent);
   pointer-events: none;
 }
 
-:root .rt-Card::before {
-  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.15), transparent);
+.dark .rt-Card::before {
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.25), transparent);
 }
 
-/* Radix Heading — neon tint */
+/* Radix Heading — light base, dark override */
 .rt-Heading {
-  color: rgb(228, 228, 231);
-}
-
-:root .rt-Heading {
   color: rgb(24, 24, 27);
 }
 
-/* Radix Text — softer zinc */
-.rt-Text {
-  color: rgb(161, 161, 170);
+.dark .rt-Heading {
+  color: rgb(228, 228, 231);
 }
 
-:root .rt-Text {
+/* Radix Text — light base, dark override */
+.rt-Text {
   color: rgb(82, 82, 82);
+}
+
+.dark .rt-Text {
+  color: rgb(161, 161, 170);
 }
 
 /* Radix Badge — futuristic */
@@ -394,47 +400,47 @@
   font-weight: 500;
 }
 
-/* Radix Tabs — neon active state */
-.rt-TabTrigger[data-state='active'] {
-  color: rgb(6, 182, 212);
-  border-bottom-color: rgba(6, 182, 212, 0.4);
-  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.1);
-}
-
+/* Radix Tabs — light base, dark override */
 .rt-TabTrigger {
-  color: rgb(113, 113, 122);
+  color: rgb(161, 161, 170);
   transition: all 0.2s;
   border-bottom: 2px solid transparent;
 }
 
 .rt-TabTrigger:hover {
-  color: rgb(161, 161, 170);
-}
-
-:root .rt-TabTrigger {
-  color: rgb(161, 161, 170);
-}
-
-:root .rt-TabTrigger:hover {
   color: rgb(82, 82, 82);
 }
 
-:root .rt-TabTrigger[data-state='active'] {
+.rt-TabTrigger[data-state='active'] {
   color: rgb(8, 145, 178);
   border-bottom-color: rgba(8, 145, 178, 0.5);
   box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
 }
 
-/* Radix Separator — subtle line */
-.rt-Separator {
-  background: rgba(255, 255, 255, 0.06);
+.dark .rt-TabTrigger {
+  color: rgb(113, 113, 122);
 }
 
-:root .rt-Separator {
+.dark .rt-TabTrigger:hover {
+  color: rgb(161, 161, 170);
+}
+
+.dark .rt-TabTrigger[data-state='active'] {
+  color: rgb(6, 182, 212);
+  border-bottom-color: rgba(6, 182, 212, 0.4);
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.1);
+}
+
+/* Radix Separator — light base, dark override */
+.rt-Separator {
   background: rgba(0, 0, 0, 0.08);
 }
 
-/* Dashboard page input fields — match futuristic theme */
+.dark .rt-Separator {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Dashboard page input fields — light base, dark override */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -442,9 +448,9 @@ input[type="url"],
 input[type="number"],
 select,
 textarea {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgb(228, 228, 231);
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: rgb(24, 24, 27);
   border-radius: 0.5rem;
   transition: all 0.15s;
 }
@@ -452,36 +458,36 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: rgba(6, 182, 212, 0.5);
-  outline: none;
-  box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.2);
-}
-
-input::placeholder {
-  color: rgb(113, 113, 122);
-}
-
-:root input[type="text"],
-:root input[type="email"],
-:root input[type="password"],
-:root input[type="url"],
-:root input[type="number"],
-:root select,
-:root textarea {
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  color: rgb(24, 24, 27);
-}
-
-:root input:focus,
-:root select:focus,
-:root textarea:focus {
   border-color: rgba(8, 145, 178, 0.5);
+  outline: none;
   box-shadow: 0 0 0 1px rgba(8, 145, 178, 0.15);
 }
 
-:root input::placeholder {
+input::placeholder {
   color: rgb(161, 161, 170);
+}
+
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="url"],
+.dark input[type="number"],
+.dark select,
+.dark textarea {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgb(228, 228, 231);
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.2);
+}
+
+.dark input::placeholder {
+  color: rgb(113, 113, 122);
 }
 
 /* Table rows — hover glow */
@@ -490,14 +496,14 @@ table tbody tr {
 }
 
 table tbody tr:hover {
-  background: rgba(6, 182, 212, 0.03);
-}
-
-:root table tbody tr:hover {
   background: rgba(6, 182, 212, 0.05);
 }
 
-/* Scrollbar — dark theme */
+.dark table tbody tr:hover {
+  background: rgba(6, 182, 212, 0.03);
+}
+
+/* Scrollbar — light base, dark override */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -508,20 +514,20 @@ table tbody tr:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-:root ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
-}
-
-:root ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Button hover glow */

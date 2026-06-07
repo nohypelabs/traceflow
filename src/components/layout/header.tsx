@@ -14,7 +14,7 @@ export function Header({ onToggleMobile }: HeaderProps) {
   const { isConnected } = useSocket();
 
   return (
-    <header className="relative flex h-14 items-center justify-between border-b border-white/[0.06] dark:border-white/[0.06] border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-white/80 backdrop-blur-lg px-6">
+    <header className="relative flex h-14 items-center justify-between border-b border-white/[0.06] dark:border-white/[0.06] border-zinc-200 bg-white/80 dark:bg-zinc-950/60 backdrop-blur-lg px-6">
       {/* Subtle gradient line at bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 

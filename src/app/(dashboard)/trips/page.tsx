@@ -136,14 +136,14 @@ function TripRow({ trip, isSelected, onClick }: any) {
       <div className="flex items-center justify-between">
         <div>
           <div className="font-medium">{trip.device?.name ?? 'Perangkat'}</div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400">{new Date(trip.startedAt).toLocaleString('id-ID')}</div>
+          <div className="text-xs text-zinc-400 dark:text-zinc-500">{new Date(trip.startedAt).toLocaleString('id-ID')}</div>
         </div>
         <div className="text-right text-sm">
           <div className="font-medium tabular-nums">{trip.distance ? `${(trip.distance / 1000).toFixed(1)} km` : '—'}</div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400">{trip.duration ? `${Math.round(trip.duration / 60)} mnt` : '—'}</div>
+          <div className="text-xs text-zinc-400 dark:text-zinc-500">{trip.duration ? `${Math.round(trip.duration / 60)} mnt` : '—'}</div>
         </div>
       </div>
-      {trip.startAddress && <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400 line-clamp-1">{trip.startAddress}</div>}
+      {trip.startAddress && <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-500 line-clamp-1">{trip.startAddress}</div>}
     </div>
   );
 }
