@@ -48,6 +48,8 @@ interface CreatedIntegration {
 
 const inputClass =
   'futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm text-white outline-none transition focus:border-cyan-400/50';
+const selectClass = `${inputClass} [color-scheme:dark]`;
+const optionClass = 'bg-zinc-950 text-white';
 
 export default function DevicesPage() {
   const utils = api.useUtils();
@@ -439,11 +441,11 @@ function CreateDeviceForm({
                 <select
                   value={form.provider}
                   onChange={(event) => setForm({ ...form, provider: event.target.value as GpsProvider })}
-                  className={inputClass}
+                  className={selectClass}
                 >
-                  <option value="TELTONIKA">Teltonika</option>
-                  <option value="QUECLINK">Queclink</option>
-                  <option value="CONCOX">Concox</option>
+                  <option className={optionClass} value="TELTONIKA">Teltonika</option>
+                  <option className={optionClass} value="QUECLINK">Queclink</option>
+                  <option className={optionClass} value="CONCOX">Concox</option>
                 </select>
               </Field>
             )}
@@ -463,14 +465,14 @@ function CreateDeviceForm({
               <select
                 value={form.vehicleType}
                 onChange={(event) => setForm({ ...form, vehicleType: event.target.value as VehicleType })}
-                className={inputClass}
+                className={selectClass}
               >
-                <option value="CAR">Mobil</option>
-                <option value="TRUCK">Truk</option>
-                <option value="MOTORCYCLE">Motor</option>
-                <option value="VAN">Van</option>
-                <option value="BUS">Bus</option>
-                <option value="OTHER">Lainnya</option>
+                <option className={optionClass} value="CAR">Mobil</option>
+                <option className={optionClass} value="TRUCK">Truk</option>
+                <option className={optionClass} value="MOTORCYCLE">Motor</option>
+                <option className={optionClass} value="VAN">Van</option>
+                <option className={optionClass} value="BUS">Bus</option>
+                <option className={optionClass} value="OTHER">Lainnya</option>
               </select>
             </Field>
           </div>
