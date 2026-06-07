@@ -80,8 +80,8 @@ export function Header({ onToggleMobile }: HeaderProps) {
             <User className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-medium text-zinc-200">{session?.user?.name ?? 'User'}</p>
-            <p className="text-[10px] text-zinc-600 uppercase tracking-wider">{session?.user?.role ?? 'VIEWER'}</p>
+            <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{session?.user?.name ?? 'User'}</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-600 uppercase tracking-wider">{session?.user?.role ?? 'VIEWER'}</p>
           </div>
         </div>
 
