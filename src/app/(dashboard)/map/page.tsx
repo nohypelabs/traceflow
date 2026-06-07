@@ -113,19 +113,19 @@ export default function MapPage() {
                 selectedDeviceId={selectedDeviceId}
               />
 
-              {/* Futuristic overlays on top of real map (tetap pertahankan vibe cyber) */}
-              <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full border border-emerald-500/30 bg-zinc-950/80 backdrop-blur px-3 py-1 text-[10px] tracking-[1.5px] text-emerald-400 z-10">
+              {/* Futuristic overlays on top of real map (z-index must exceed Leaflet panes: tile=200, marker=600, popup=700) */}
+              <div className="absolute top-4 left-4 flex items-center gap-2 rounded-full border border-emerald-500/30 bg-zinc-950/80 backdrop-blur px-3 py-1 text-[10px] tracking-[1.5px] text-emerald-400 z-[800]">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE TRACKING
               </div>
 
-              <div className="absolute top-4 right-4 flex gap-3 text-[10px] bg-zinc-950/80 backdrop-blur border border-white/10 rounded-full px-3 py-1 z-10">
+              <div className="absolute top-4 right-4 flex gap-3 text-[10px] bg-zinc-950/80 backdrop-blur border border-white/10 rounded-full px-3 py-1 z-[800]">
                 <div>{devices.length} <span className="text-zinc-500">devices</span></div>
                 <div className="text-emerald-400">{onlineCount} online</div>
                 <div>{locatedCount} <span className="text-zinc-500">berlokasi</span></div>
               </div>
 
               {devicesQuery.error && (
-                <div className="absolute bottom-4 left-4 z-10 rounded-lg border border-red-500/30 bg-red-950/90 px-3 py-2 text-xs text-red-100">
+                <div className="absolute bottom-4 left-4 z-[800] rounded-lg border border-red-500/30 bg-red-950/90 px-3 py-2 text-xs text-red-100">
                   Gagal memuat perangkat: {devicesQuery.error.message}
                 </div>
               )}
@@ -142,7 +142,7 @@ export default function MapPage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                      className="absolute bottom-4 left-4 z-20 flex items-center gap-2.5 rounded-xl border border-cyan-500/30 bg-zinc-950/90 backdrop-blur px-3.5 py-2"
+                      className="absolute bottom-4 left-4 z-[800] flex items-center gap-2.5 rounded-xl border border-cyan-500/30 bg-zinc-950/90 backdrop-blur px-3.5 py-2"
                       style={{
                         boxShadow: '0 0 20px rgba(6,182,212,0.15), 0 0 40px rgba(6,182,212,0.05)',
                       }}
@@ -178,7 +178,7 @@ export default function MapPage() {
               {!showSidebar && (
                 <button
                   onClick={toggleSidebar}
-                  className="absolute top-4 right-[13rem] z-20 flex items-center gap-1.5 rounded-full border border-white/15 bg-zinc-950/80 backdrop-blur px-2.5 py-1 text-[10px] text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-300 transition"
+                  className="absolute top-4 right-[13rem] z-[800] flex items-center gap-1.5 rounded-full border border-white/15 bg-zinc-950/80 backdrop-blur px-2.5 py-1 text-[10px] text-zinc-300 hover:border-cyan-500/40 hover:text-cyan-300 transition"
                   title="Show active devices"
                 >
                   <Sidebar className="h-3.5 w-3.5" />
@@ -430,7 +430,7 @@ function DeviceDropdown({
     : null;
 
   return (
-    <div ref={dropdownRef} className="absolute top-14 right-4 z-30">
+    <div ref={dropdownRef} className="absolute top-14 right-4 z-[900]">
       {/* Trigger button */}
       <motion.button
         onClick={() => setOpen((v) => !v)}
