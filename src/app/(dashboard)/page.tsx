@@ -60,14 +60,15 @@ export default function DashboardPage() {
     };
   }, [socket]);
 
-  const onlineCount = onlineDevices.size || (stats?.onlineDevices ?? 0);
+  // Realtime socket overlay (falls back to tRPC data)
 
-  // Demo values for attractive presentation (rich mock data)
-  const demoTotalDevices = 28;
-  const demoOnline = 21;
-  const demoIdle = 5;
-  const demoOffline = 2;
-  const demoTodayTrips = 47;
+  // Derived values from real tRPC data
+  const totalDevices = stats?.totalDevices ?? 0;
+  const onlineCount = stats?.onlineDevices ?? 0;
+  const idleCount = stats?.idleDevices ?? 0;
+  const offlineCount = stats?.offlineDevices ?? 0;
+  const todayTrips = stats?.todayTrips ?? 0;
+  const onlinePct = totalDevices > 0 ? Math.round((onlineCount / totalDevices) * 100) : 0;
 
   // Handle errors
   if (statsError) {
@@ -92,15 +93,7 @@ export default function DashboardPage() {
 
   const allAlerts = [...realtimeAlerts, ...(recentAlerts ?? [])].slice(0, 5);
 
-  // Rich mock data for demo (makes dashboard look alive and impressive)
-  const demoRecentAlerts = [
-    { id: 'a1', device: { name: 'Truk Armada-07' }, message: 'Memasuki geofence Gudang Utara', severity: 'INFO', triggeredAt: new Date(Date.now() - 1000 * 60 * 2) },
-    { id: 'a2', device: { name: 'Mobil Ops #12' }, message: 'Kecepatan melebihi batas 80 km/h', severity: 'WARNING', triggeredAt: new Date(Date.now() - 1000 * 60 * 7) },
-    { id: 'a3', device: { name: 'Motor Kurir-03' }, message: 'Keluar dari geofence Rute A', severity: 'INFO', triggeredAt: new Date(Date.now() - 1000 * 60 * 14) },
-    { id: 'a4', device: { name: 'Van Logistik-09' }, message: 'SOS button ditekan', severity: 'CRITICAL', triggeredAt: new Date(Date.now() - 1000 * 60 * 19) },
-    { id: 'a5', device: { name: 'Truk B-15' }, message: 'Memasuki geofence Pool Maintenance', severity: 'INFO', triggeredAt: new Date(Date.now() - 1000 * 60 * 28) },
-    { id: 'a6', device: { name: 'Mobil Operasional #5' }, message: 'Kecepatan melebihi batas 80 km/h', severity: 'WARNING', triggeredAt: new Date(Date.now() - 1000 * 60 * 35) },
-  ];
+  // Alerts: merge realtime socket + tRPC query
 
   // Loading state with futuristic skeleton
   if (isLoading) {
@@ -217,16 +210,16 @@ export default function DashboardPage() {
                   <MapPin className="h-4 w-4 text-blue-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-zinc-900 dark:text-white md:text-[36px]">
-                  28
+                  {totalDevices}
                 </div>
                 <div className="mt-2 h-8 flex items-center">
                   <div className="flex gap-2 text-[10px]">
-                    <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400">21 online</span>
-                    <span className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-yellow-400">5 idle</span>
-                    <span className="rounded bg-zinc-500/10 px-1.5 py-0.5 text-zinc-400">2 off</span>
+                    <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400">{onlineCount} online</span>
+                    <span className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-yellow-400">{idleCount} idle</span>
+                    <span className="rounded bg-zinc-500/10 px-1.5 py-0.5 text-zinc-400">{offlineCount} off</span>
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-emerald-400/80">+3 minggu ini</div>
+                <div className="mt-1 text-xs text-emerald-400/80">{totalDevices} total perangkat</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
@@ -240,15 +233,15 @@ export default function DashboardPage() {
                   <Wifi className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-emerald-400 md:text-[36px]">
-                  21
-                  <span className="text-base text-zinc-500 ml-1">/ 28</span>
+                  {onlineCount}
+                  <span className="text-base text-zinc-500 ml-1">/ {totalDevices}</span>
                 </div>
                 <div className="mt-2 h-8 flex items-center">
                   <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden">
-                    <div className="h-full w-[75%] rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" />
+                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-500" style={{ width: `${onlinePct}%` }} />
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-emerald-400/80">75% aktif • 3 idle</div>
+                <div className="mt-1 text-xs text-emerald-400/80">{onlinePct}% aktif • {idleCount} idle</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
@@ -262,16 +255,14 @@ export default function DashboardPage() {
                   <WifiOff className="h-4 w-4 text-zinc-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-zinc-500 dark:text-zinc-400 md:text-[36px]">
-                  2
+                  {offlineCount}
                 </div>
                 <div className="mt-2 h-8 flex items-center">
-                  <div className="flex gap-1 text-[10px]">
-                    {['TRK-07', 'MTR-12'].map((id, i) => (
-                      <span key={i} className="rounded bg-zinc-500/10 px-1.5 py-0.5 text-zinc-400">{id}</span>
-                    ))}
+                  <div className="text-[10px] text-zinc-400">
+                    {offlineCount === 0 ? 'Semua perangkat aktif' : `${offlineCount} perangkat tidak aktif`}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">Terakhir: 47 menit lalu</div>
+                <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">Status real-time dari server</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
@@ -285,7 +276,7 @@ export default function DashboardPage() {
                   <TrendingUp className="h-4 w-4 text-yellow-400" />
                 </div>
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-yellow-400 md:text-[36px]">
-                  47
+                  {todayTrips}
                 </div>
                 {/* Mini sparkline */}
                 <div className="mt-2 h-8 flex items-end">
@@ -295,7 +286,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-emerald-400/80">↑ 8 trip vs kemarin</div>
+                <div className="mt-1 text-xs text-emerald-400/80">{todayTrips > 0 ? `↑ ${todayTrips} trip hari ini` : 'Belum ada trip hari ini'}</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
@@ -427,7 +418,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="font-mono text-xs text-zinc-400 tabular-nums">
-                    {demoTotalDevices} TOTAL
+                    {totalDevices} TOTAL
                   </div>
                 </div>
 
@@ -438,7 +429,7 @@ export default function DashboardPage() {
                       <div className="text-sm font-medium text-emerald-300">Online</div>
                     </div>
                     <div className="font-mono text-2xl font-semibold tabular-nums text-emerald-400">
-                      {demoOnline}
+                      {onlineCount}
                     </div>
                   </div>
 
@@ -448,7 +439,7 @@ export default function DashboardPage() {
                       <div className="text-sm font-medium text-yellow-300">Idle</div>
                     </div>
                     <div className="font-mono text-2xl font-semibold tabular-nums text-yellow-400">
-                      {demoIdle}
+                      {idleCount}
                     </div>
                   </div>
 
@@ -458,7 +449,7 @@ export default function DashboardPage() {
                       <div className="text-sm font-medium text-zinc-300">Offline</div>
                     </div>
                     <div className="font-mono text-2xl font-semibold tabular-nums text-zinc-300">
-                      {demoOffline}
+                      {offlineCount}
                     </div>
                   </div>
                 </div>
@@ -491,10 +482,10 @@ export default function DashboardPage() {
                   </Link>
                 </div>
 
-                {/* Using rich demo mock data for impressive demo presentation */}
-                {demoRecentAlerts.length > 0 ? (
+                {/* Using real alerts from database + realtime socket */}
+                {allAlerts.length > 0 ? (
                   <div className="space-y-2">
-                    {demoRecentAlerts.map((alert, index) => {
+                    {allAlerts.map((alert, index) => {
                       const sev = alert.severity || 'INFO';
                       const accent = severityAccent[sev] || severityAccent.INFO;
                       const iconColor = severityIconColor[sev] || severityIconColor.INFO;
