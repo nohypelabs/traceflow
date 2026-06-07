@@ -467,7 +467,7 @@ function DeviceDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="absolute right-0 mt-2 w-72 origin-top-right rounded-2xl border border-white/10 bg-zinc-950/95 backdrop-blur-xl overflow-hidden"
+            className="absolute right-0 mt-2 w-72 origin-top-right rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/95 backdrop-blur-xl overflow-hidden"
             style={{
               boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(6,182,212,0.08)',
             }}
@@ -482,7 +482,7 @@ function DeviceDropdown({
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
                   placeholder="Cari nama atau plat..."
-                  className="w-full rounded-xl border border-white/10 bg-white/5 pl-9 pr-8 py-2 text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-cyan-500/40 focus:outline-none transition"
+                  className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 pl-9 pr-8 py-2 text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:border-cyan-500/40 focus:outline-none transition"
                 />
                 {searchQuery && (
                   <button

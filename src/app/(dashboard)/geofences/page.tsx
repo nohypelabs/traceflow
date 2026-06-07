@@ -396,7 +396,7 @@ function GeofenceForm({
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm focus:border-cyan-500/40 focus:outline-none transition"
+                className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white focus:border-cyan-500/40 focus:outline-none transition"
                 placeholder="Zona Kantor"
                 required
               />
@@ -548,7 +548,7 @@ function GeofenceForm({
               <button
                 type="button"
                 onClick={() => setShowDevicePicker(!showDevicePicker)}
-                className="w-full flex items-center justify-between rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm text-left hover:border-cyan-500/30 transition"
+                className="w-full flex items-center justify-between rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white text-left hover:border-cyan-500/30 transition"
               >
                 <span className="text-zinc-400">
                   Pilih perangkat...
@@ -567,7 +567,7 @@ function GeofenceForm({
                     animate={{ opacity: 1, y: 0, scaleY: 1 }}
                     exit={{ opacity: 0, y: -8, scaleY: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-xl border border-white/10 bg-zinc-900/95 backdrop-blur shadow-xl origin-top"
+                    className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900/95 backdrop-blur shadow-xl origin-top"
                   >
                     {devices.length === 0 ? (
                       <div className="p-3 text-xs text-zinc-500 text-center">

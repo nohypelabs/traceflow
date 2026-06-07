@@ -545,3 +545,36 @@ select,
 .clickable {
   cursor: pointer;
 }
+
+/* Native select option — match theme */
+select option {
+  background: #ffffff;
+  color: #18181b;
+}
+
+.dark select option {
+  background: #18181b;
+  color: #e4e4e7;
+}
+
+/* Native select dropdown — color scheme */
+select {
+  color-scheme: light;
+}
+
+.dark select {
+  color-scheme: dark;
+}
+
+/* Date/time input — match theme */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  color-scheme: light;
+}
+
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"] {
+  color-scheme: dark;
+}

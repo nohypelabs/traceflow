@@ -75,7 +75,7 @@ export default function TripsPage() {
             <select
               value={selectedDeviceId}
               onChange={(e) => { setSelectedDeviceId(e.target.value); setSelectedTrip(null); }}
-              className="w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm focus:border-cyan-500/40 focus:outline-none transition"
+              className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white focus:border-cyan-500/40 focus:outline-none transition"
             >
               <option value="">Semua Perangkat</option>
               {devices.map((d) => (
@@ -89,7 +89,7 @@ export default function TripsPage() {
               type="date"
               value={dateRange.from}
               onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-              className="w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm focus:border-cyan-500/40 focus:outline-none transition"
+              className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white focus:border-cyan-500/40 focus:outline-none transition"
             />
           </div>
           <div>
@@ -98,7 +98,7 @@ export default function TripsPage() {
               type="date"
               value={dateRange.to}
               onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-              className="w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm focus:border-cyan-500/40 focus:outline-none transition"
+              className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white focus:border-cyan-500/40 focus:outline-none transition"
             />
           </div>
         </div>
