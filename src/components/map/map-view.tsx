@@ -21,9 +21,11 @@ interface MapViewProps {
   resizeKey?: number;
   /** Bump to re-center/fit all current devices (wired to "Center All" button) */
   fitKey?: number;
+  /** ID of the selected device — map will fly to it and highlight its marker */
+  selectedDeviceId?: string | null;
 }
 
-export default function MapView({ devices: initialDevices, resizeKey, fitKey }: MapViewProps) {
+export default function MapView({ devices: initialDevices, resizeKey, fitKey, selectedDeviceId }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<Map<string, any>>(new Map());
@@ -33,7 +35,7 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey }: 
   const { socket } = useSocket();
 
   // Helper to (re)draw markers - defined once per render
-  const updateMarkers = (L: any, map: any, devs: Device[]) => {
+  const updateMarkers = (L: any, map: any, devs: Device[], selectedId?: string | null) => {
     const markers = markersRef.current;
 
     // Clear existing markers
@@ -51,38 +53,69 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey }: 
       };
 
       const color = statusColors[device.status] ?? '#a1a1aa';
+      const isSelected = device.id === selectedId;
 
       const icon = L.divIcon({
         className: 'custom-marker',
         html: `
-          <div style="position: relative; width: 32px; height: 32px;">
+          <div style="position: relative; width: 48px; height: 48px;">
+            ${isSelected ? `
             <div style="
               position: absolute;
               top: 50%;
               left: 50%;
               transform: translate(-50%, -50%);
-              width: 24px;
-              height: 24px;
-              background: ${color};
-              border: 3px solid white;
+              width: 44px;
+              height: 44px;
+              border: 2px solid ${color};
               border-radius: 50%;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-              transition: all 0.3s ease;
+              opacity: 0.4;
+              animation: marker-pulse-ring 1.5s ease-out infinite;
             "></div>
             <div style="
               position: absolute;
               top: 50%;
               left: 50%;
               transform: translate(-50%, -50%);
-              width: 8px;
-              height: 8px;
+              width: 36px;
+              height: 36px;
+              border: 2px solid ${color};
+              border-radius: 50%;
+              opacity: 0.25;
+              animation: marker-pulse-ring 1.5s ease-out infinite 0.4s;
+            "></div>
+            ` : ''}
+            <div style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: ${isSelected ? '28px' : '24px'};
+              height: ${isSelected ? '28px' : '24px'};
+              background: ${color};
+              border: 3px solid ${isSelected ? '#ffffff' : 'white'};
+              border-radius: 50%;
+              box-shadow: ${isSelected
+                ? `0 0 12px ${color}, 0 0 24px ${color}40, 0 2px 8px rgba(0,0,0,0.4)`
+                : '0 2px 4px rgba(0,0,0,0.3)'
+              };
+              transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            "></div>
+            <div style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: ${isSelected ? '10px' : '8px'};
+              height: ${isSelected ? '10px' : '8px'};
               background: white;
               border-radius: 50%;
+              transition: all 0.4s ease;
             "></div>
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: [48, 48],
+        iconAnchor: [24, 24],
       });
 
       const marker = L.marker([device.lastLatitude, device.lastLongitude], { icon })
@@ -95,11 +128,16 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey }: 
           </div>
         `);
 
+      // Auto-open popup for selected device
+      if (isSelected) {
+        marker.openPopup();
+      }
+
       markers.set(device.id, marker);
     });
 
-    // Fit bounds if devices exist
-    if (markers.size > 0) {
+    // Fit bounds if devices exist (only when no device is selected)
+    if (markers.size > 0 && !selectedId) {
       const group = L.featureGroup(Array.from(markers.values()));
       map.fitBounds(group.getBounds().pad(0.18));
     }
@@ -133,7 +171,7 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey }: 
       }
 
       // Draw initial markers immediately after map is ready (current devices from this render)
-      updateMarkers(L, map, devices);
+      updateMarkers(L, map, devices, selectedDeviceId);
 
       // Robust sizing for h-full / flex / dynamic layouts:
       // 1. ResizeObserver keeps map filling its container whenever parent size changes (sidebar, window, etc.)
@@ -212,13 +250,27 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey }: 
     const L = leafletRef.current;
     const map = mapInstanceRef.current;
     if (!L || !map) return;
-    updateMarkers(L, map, devices);
+    updateMarkers(L, map, devices, selectedDeviceId);
 
     // Re-validate size in case container changed (e.g. sidebar, responsive)
     setTimeout(() => {
       try { map.invalidateSize(); } catch {}
     }, 10);
-  }, [devices]);
+  }, [devices, selectedDeviceId]);
+
+  // Fly to selected device with smooth animation
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !selectedDeviceId) return;
+
+    const device = devices.find((d) => d.id === selectedDeviceId);
+    if (!device?.lastLatitude || !device?.lastLongitude) return;
+
+    map.flyTo([device.lastLatitude, device.lastLongitude], 15, {
+      duration: 1.2,
+      easeLinearity: 0.25,
+    });
+  }, [selectedDeviceId, devices]);
 
   // Handle explicit resizes from parent (sidebar toggle etc)
   useEffect(() => {
@@ -256,10 +308,24 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey }: 
   }, [fitKey]);
 
   return (
-    <div 
-      ref={mapRef} 
-      className="h-full w-full min-h-[400px]" 
-      style={{ height: '100%', width: '100%' }}
-    />
+    <>
+      <style>{`
+        @keyframes marker-pulse-ring {
+          0% {
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 0.6;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(1.8);
+            opacity: 0;
+          }
+        }
+      `}</style>
+      <div
+        ref={mapRef}
+        className="h-full w-full min-h-[400px]"
+        style={{ height: '100%', width: '100%' }}
+      />
+    </>
   );
 }
