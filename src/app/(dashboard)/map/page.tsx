@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Layers, Maximize2, Crosshair, Target, Sidebar } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
+import { MapPin, Layers, Maximize2, Crosshair, Target, Sidebar, Search, ChevronUp, X } from 'lucide-react';
 import { api } from '@/lib/api-provider';
 import { PageWrapper, CyberCard } from '@/components/ui/page-wrapper';
 import { NeonButton } from '@/components/ui/page-wrapper';
@@ -36,6 +36,8 @@ export default function MapPage() {
   const [mapResizeKey, setMapResizeKey] = useState(0);
   const [fitKey, setFitKey] = useState(0);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const devicesQuery = api.device.list.useQuery(undefined, {
     refetchInterval: 5000,
     refetchOnWindowFocus: true,
@@ -45,6 +47,24 @@ export default function MapPage() {
   const locatedCount = devices.filter(
     (device) => device.lastLatitude != null && device.lastLongitude != null,
   ).length;
+
+  // Filtered & grouped devices for mobile bottom sheet
+  const filteredDevices = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = q
+      ? devices.filter(
+          (d) =>
+            d.name.toLowerCase().includes(q) ||
+            (d.vehiclePlate?.toLowerCase().includes(q) ?? false),
+        )
+      : devices;
+
+    // Group by status: ONLINE → IDLE → OFFLINE
+    const statusOrder: Record<string, number> = { ONLINE: 0, IDLE: 1, OFFLINE: 2 };
+    return [...filtered].sort(
+      (a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3),
+    );
+  }, [devices, searchQuery]);
 
   const toggleSidebar = () => {
     setShowSidebar((v) => !v);
@@ -57,6 +77,9 @@ export default function MapPage() {
 
   const handleSelectDevice = (deviceId: string) => {
     setSelectedDeviceId((prev) => (prev === deviceId ? null : deviceId));
+    // On mobile, collapse sheet after selecting
+    setSheetExpanded(false);
+    setSearchQuery('');
   };
 
   return (
@@ -123,7 +146,7 @@ export default function MapPage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                      className="absolute bottom-4 left-4 z-10 flex items-center gap-2.5 rounded-xl border border-cyan-500/30 bg-zinc-950/90 backdrop-blur px-3.5 py-2"
+                      className="absolute bottom-[140px] lg:bottom-4 left-4 z-20 flex items-center gap-2.5 rounded-xl border border-cyan-500/30 bg-zinc-950/90 backdrop-blur px-3.5 py-2"
                       style={{
                         boxShadow: '0 0 20px rgba(6,182,212,0.15), 0 0 40px rgba(6,182,212,0.05)',
                       }}
@@ -166,6 +189,173 @@ export default function MapPage() {
                   <span className="hidden sm:inline">DEVICES</span>
                 </button>
               )}
+
+              {/* ── Mobile Bottom Sheet (lg:hidden) ── */}
+              <div className="absolute inset-x-0 bottom-0 z-30 lg:hidden pointer-events-none">
+                <motion.div
+                  className="pointer-events-auto mx-2 mb-2 rounded-2xl border border-white/10 bg-zinc-950/95 backdrop-blur-xl overflow-hidden"
+                  initial={false}
+                  animate={{
+                    height: sheetExpanded ? 'min(70vh, 480px)' : 'auto',
+                  }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+                  style={{
+                    boxShadow: '0 -4px 30px rgba(0,0,0,0.5), 0 0 40px rgba(6,182,212,0.05)',
+                  }}
+                >
+                  {/* Drag handle + header */}
+                  <button
+                    onClick={() => setSheetExpanded((v) => !v)}
+                    className="w-full flex flex-col items-center pt-2 pb-1 px-4"
+                  >
+                    <div className="w-8 h-1 rounded-full bg-zinc-600 mb-2" />
+                    <div className="w-full flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] tracking-[1.5px] text-zinc-400 font-medium">
+                          PERANGKAT
+                        </span>
+                        <span className="text-[10px] text-zinc-600">
+                          {devices.length} total
+                        </span>
+                      </div>
+                      <motion.div
+                        animate={{ rotate: sheetExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronUp className="h-4 w-4 text-zinc-500" />
+                      </motion.div>
+                    </div>
+                  </button>
+
+                  {/* Search bar (visible when expanded) */}
+                  <AnimatePresence>
+                    {sheetExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="px-3 pb-2 overflow-hidden"
+                      >
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                          <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Cari nama atau plat..."
+                            className="w-full rounded-xl border border-white/10 bg-white/5 pl-9 pr-8 py-2 text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-cyan-500/40 focus:outline-none transition"
+                          />
+                          {searchQuery && (
+                            <button
+                              onClick={() => setSearchQuery('')}
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Device list */}
+                  <div
+                    className="overflow-y-auto px-3 pb-3"
+                    style={{ maxHeight: sheetExpanded ? 'calc(min(70vh, 480px) - 100px)' : '120px' }}
+                  >
+                    {devicesQuery.isLoading ? (
+                      <div className="py-4 text-center text-xs text-zinc-500">
+                        Memuat perangkat...
+                      </div>
+                    ) : filteredDevices.length === 0 ? (
+                      <div className="py-4 text-center text-xs text-zinc-500">
+                        {searchQuery ? 'Tidak ditemukan' : 'Belum ada perangkat'}
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {filteredDevices.map((device) => {
+                          const isSelected = device.id === selectedDeviceId;
+                          const hasLocation =
+                            device.lastLatitude != null && device.lastLongitude != null;
+
+                          return (
+                            <motion.button
+                              key={device.id}
+                              onClick={() => handleSelectDevice(device.id)}
+                              disabled={!hasLocation}
+                              whileTap={hasLocation ? { scale: 0.97 } : {}}
+                              className={`
+                                flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors
+                                ${isSelected
+                                  ? 'border-cyan-500/50 bg-cyan-500/10'
+                                  : 'border-white/5 bg-white/[0.02] active:bg-white/5'
+                                }
+                                ${!hasLocation ? 'opacity-50' : ''}
+                              `}
+                            >
+                              {/* Status dot */}
+                              <div className="relative shrink-0">
+                                <div
+                                  className={`h-2.5 w-2.5 rounded-full ${
+                                    device.status === 'ONLINE'
+                                      ? 'bg-emerald-400 shadow-[0_0_6px_#10b981]'
+                                      : device.status === 'IDLE'
+                                        ? 'bg-yellow-400'
+                                        : 'bg-zinc-600'
+                                  }`}
+                                />
+                                {isSelected && (
+                                  <motion.div
+                                    className="absolute inset-0 rounded-full bg-cyan-400"
+                                    animate={{ scale: [1, 2.5, 1], opacity: [0.6, 0, 0.6] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                  />
+                                )}
+                              </div>
+
+                              {/* Device info */}
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span
+                                    className={`text-xs truncate ${
+                                      isSelected ? 'text-cyan-200 font-medium' : 'text-zinc-200'
+                                    }`}
+                                  >
+                                    {device.name}
+                                  </span>
+                                  <span className="shrink-0 text-[10px] text-zinc-500 tabular-nums">
+                                    {formatLastSeen(device.lastSeenAt)}
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-zinc-500">
+                                  {device.status === 'ONLINE'
+                                    ? `${Math.round(device.lastSpeed ?? 0)} km/h`
+                                    : device.status === 'IDLE'
+                                      ? 'Idle'
+                                      : 'Offline'}
+                                  {device.vehiclePlate ? ` • ${device.vehiclePlate}` : ''}
+                                </div>
+                              </div>
+
+                              {/* Map pin */}
+                              <MapPin
+                                className={`h-3.5 w-3.5 shrink-0 ${
+                                  isSelected
+                                    ? 'text-cyan-300'
+                                    : hasLocation
+                                      ? 'text-cyan-300/40'
+                                      : 'text-zinc-700'
+                                }`}
+                              />
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </CyberCard>
         </div>
