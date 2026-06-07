@@ -206,23 +206,26 @@ export default function MapPage() {
                   {/* Drag handle + header */}
                   <button
                     onClick={() => setSheetExpanded((v) => !v)}
-                    className="w-full flex flex-col items-center pt-2 pb-1 px-4"
+                    className="w-full flex flex-col items-center pt-2.5 pb-1.5 px-4 active:bg-white/5 transition"
                   >
-                    <div className="w-8 h-1 rounded-full bg-zinc-600 mb-2" />
+                    <div className="w-10 h-1 rounded-full bg-zinc-500 mb-2.5" />
                     <div className="w-full flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] tracking-[1.5px] text-zinc-400 font-medium">
-                          PERANGKAT
-                        </span>
-                        <span className="text-[10px] text-zinc-600">
-                          {devices.length} total
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="text-[10px] tracking-[1.5px] text-zinc-300 font-medium">
+                            PERANGKAT
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-zinc-500">
+                          {onlineCount}/{devices.length}
                         </span>
                       </div>
                       <motion.div
                         animate={{ rotate: sheetExpanded ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <ChevronUp className="h-4 w-4 text-zinc-500" />
+                        <ChevronUp className="h-4 w-4 text-zinc-400" />
                       </motion.div>
                     </div>
                   </button>
