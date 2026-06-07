@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Layers, Maximize2, Crosshair, Target, Sidebar, Search, ChevronUp, X } from 'lucide-react';
+import { MapPin, Layers, Maximize2, Crosshair, Target, Sidebar, Search, ChevronDown, Radio, X } from 'lucide-react';
 import { api } from '@/lib/api-provider';
 import { PageWrapper, CyberCard } from '@/components/ui/page-wrapper';
 import { NeonButton } from '@/components/ui/page-wrapper';
@@ -142,7 +142,7 @@ export default function MapPage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                      className="absolute bottom-[140px] lg:bottom-4 left-4 z-20 flex items-center gap-2.5 rounded-xl border border-cyan-500/30 bg-zinc-950/90 backdrop-blur px-3.5 py-2"
+                      className="absolute bottom-4 left-4 z-20 flex items-center gap-2.5 rounded-xl border border-cyan-500/30 bg-zinc-950/90 backdrop-blur px-3.5 py-2"
                       style={{
                         boxShadow: '0 0 20px rgba(6,182,212,0.15), 0 0 40px rgba(6,182,212,0.05)',
                       }}
@@ -186,8 +186,8 @@ export default function MapPage() {
                 </button>
               )}
 
-              {/* ── Mobile Bottom Sheet (lg:hidden) ── */}
-              <MobileDeviceSheet
+              {/* ── Device Dropdown (mobile + desktop when sidebar hidden) ── */}
+              <DeviceDropdown
                 devices={filteredDevices}
                 allDevicesCount={devices.length}
                 onlineCount={onlineCount}
@@ -352,12 +352,9 @@ export default function MapPage() {
   );
 }
 
-// ── Mobile Bottom Sheet with Drag ──
+// ── Device Dropdown ──
 
-const PEEK_HEIGHT = 150;
-const EXPANDED_HEIGHT = 420;
-
-interface MobileDeviceSheetProps {
+interface DeviceDropdownProps {
   devices: Array<{
     id: string;
     name: string;
@@ -377,7 +374,7 @@ interface MobileDeviceSheetProps {
   onSelectDevice: (id: string) => void;
 }
 
-function MobileDeviceSheet({
+function DeviceDropdown({
   devices,
   allDevicesCount,
   onlineCount,
@@ -386,222 +383,241 @@ function MobileDeviceSheet({
   searchQuery,
   onSearchChange,
   onSelectDevice,
-}: MobileDeviceSheetProps) {
-  const [expanded, setExpanded] = useState(false);
-  const dragStartY = useRef(0);
-  const wasDragging = useRef(false);
+}: DeviceDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDragStart = (_: any, info: { point: { y: number } }) => {
-    dragStartY.current = info.point.y;
-    wasDragging.current = false;
-  };
+  // Close on click outside
+  useEffect(() => {
+    if (!open) return;
 
-  const handleDrag = (_: any, info: { offset: { y: number } }) => {
-    // Mark as dragging if moved more than 5px
-    if (Math.abs(info.offset.y) > 5) {
-      wasDragging.current = true;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        onSearchChange('');
+      }
+    };
+
+    // Delay to avoid the opening click triggering close
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 10);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open, onSearchChange]);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (open && searchInputRef.current) {
+      // Small delay so the animation starts first
+      const timer = setTimeout(() => searchInputRef.current?.focus(), 150);
+      return () => clearTimeout(timer);
     }
-  };
-
-  const handleDragEnd = (_: any, info: { offset: { y: number }; velocity: { y: number } }) => {
-    const offsetY = info.offset.y;
-    const velocityY = info.velocity.y;
-
-    // Fast swipe up → expand, fast swipe down → collapse
-    if (velocityY < -200) {
-      setExpanded(true);
-      return;
-    }
-    if (velocityY > 200) {
-      setExpanded(false);
-      return;
-    }
-
-    // Slow drag: snap based on position
-    if (offsetY < -30) {
-      setExpanded(true);
-    } else if (offsetY > 30) {
-      setExpanded(false);
-    }
-    // else: small drag, keep current state
-  };
-
-  const handleToggleTap = () => {
-    // Only toggle on tap, not on drag end
-    if (!wasDragging.current) {
-      setExpanded((v) => !v);
-    }
-  };
+  }, [open]);
 
   const handleDeviceTap = (deviceId: string) => {
     onSelectDevice(deviceId);
-    setExpanded(false);
+    setOpen(false);
     onSearchChange('');
   };
 
+  const selectedDevice = selectedDeviceId
+    ? devices.find((d) => d.id === selectedDeviceId)
+    : null;
+
   return (
-    <div className="absolute inset-x-0 bottom-0 z-30 lg:hidden pointer-events-none">
-      <motion.div
-        className="pointer-events-auto mx-2 mb-2 rounded-2xl border border-white/10 bg-zinc-950/95 backdrop-blur-xl"
-        drag="y"
-        dragConstraints={{ top: -(EXPANDED_HEIGHT - PEEK_HEIGHT), bottom: 0 }}
-        dragElastic={0.1}
-        dragMomentum={false}
-        onDragStart={handleDragStart}
-        onDrag={handleDrag}
-        onDragEnd={handleDragEnd}
-        animate={{ y: expanded ? -(EXPANDED_HEIGHT - PEEK_HEIGHT) : 0 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-        style={{
-          height: EXPANDED_HEIGHT,
-          boxShadow: '0 -4px 30px rgba(0,0,0,0.5), 0 0 40px rgba(6,182,212,0.05)',
-        }}
+    <div ref={dropdownRef} className="absolute top-14 right-4 z-30">
+      {/* Trigger button */}
+      <motion.button
+        onClick={() => setOpen((v) => !v)}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        className={`
+          flex items-center gap-2 rounded-xl border px-3 py-2 text-xs backdrop-blur transition-colors
+          ${open
+            ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
+            : 'border-white/15 bg-zinc-950/80 text-zinc-300 hover:border-cyan-500/30 hover:text-cyan-300'
+          }
+        `}
       >
-        {/* Drag handle + header — tap toggles, drag slides */}
-        <div
-          onClick={handleToggleTap}
-          className="flex flex-col items-center pt-2.5 pb-1.5 px-4 cursor-grab active:cursor-grabbing"
+        <Radio className={`h-3.5 w-3.5 ${open ? 'text-cyan-400' : 'text-zinc-500'}`} />
+        <span className="font-medium tracking-wide">
+          {selectedDevice ? selectedDevice.name : 'DEVICES'}
+        </span>
+        <span className={`text-[10px] ${open ? 'text-cyan-400/70' : 'text-zinc-500'}`}>
+          {onlineCount}/{allDevicesCount}
+        </span>
+        <motion.div
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
         >
-          <div className="w-10 h-1 rounded-full bg-zinc-500 mb-2.5" />
-          <div className="w-full flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] tracking-[1.5px] text-zinc-300 font-medium">
-                  PERANGKAT
-                </span>
+          <ChevronDown className="h-3.5 w-3.5" />
+        </motion.div>
+      </motion.button>
+
+      {/* Dropdown panel */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            className="absolute right-0 mt-2 w-72 origin-top-right rounded-2xl border border-white/10 bg-zinc-950/95 backdrop-blur-xl overflow-hidden"
+            style={{
+              boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(6,182,212,0.08)',
+            }}
+          >
+            {/* Header with search */}
+            <div className="p-3 border-b border-white/5">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  placeholder="Cari nama atau plat..."
+                  className="w-full rounded-xl border border-white/10 bg-white/5 pl-9 pr-8 py-2 text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-cyan-500/40 focus:outline-none transition"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => onSearchChange('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
-              <span className="text-[10px] text-zinc-500">
-                {onlineCount}/{allDevicesCount}
+            </div>
+
+            {/* Device list */}
+            <div className="overflow-y-auto p-2" style={{ maxHeight: 'min(50vh, 360px)' }}>
+              {isLoading ? (
+                <div className="py-6 text-center text-xs text-zinc-500">
+                  Memuat perangkat...
+                </div>
+              ) : devices.length === 0 ? (
+                <div className="py-6 text-center text-xs text-zinc-500">
+                  {searchQuery ? 'Tidak ditemukan' : 'Belum ada perangkat'}
+                </div>
+              ) : (
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: {},
+                    visible: { transition: { staggerChildren: 0.03 } },
+                  }}
+                  className="space-y-1"
+                >
+                  {devices.map((device) => {
+                    const isSelected = device.id === selectedDeviceId;
+                    const hasLocation =
+                      device.lastLatitude != null && device.lastLongitude != null;
+
+                    return (
+                      <motion.button
+                        key={device.id}
+                        onClick={() => handleDeviceTap(device.id)}
+                        disabled={!hasLocation}
+                        variants={{
+                          hidden: { opacity: 0, x: -8 },
+                          visible: { opacity: 1, x: 0 },
+                        }}
+                        whileHover={hasLocation ? { x: 2 } : {}}
+                        whileTap={hasLocation ? { scale: 0.98 } : {}}
+                        transition={{ duration: 0.15 }}
+                        className={`
+                          flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors
+                          ${isSelected
+                            ? 'border-cyan-500/40 bg-cyan-500/10 shadow-[0_0_10px_rgba(6,182,212,0.1)]'
+                            : 'border-transparent bg-transparent hover:bg-white/5 hover:border-white/10'
+                          }
+                          ${!hasLocation ? 'opacity-40' : ''}
+                        `}
+                      >
+                        {/* Status dot */}
+                        <div className="relative shrink-0">
+                          <div
+                            className={`h-2.5 w-2.5 rounded-full ${
+                              device.status === 'ONLINE'
+                                ? 'bg-emerald-400 shadow-[0_0_6px_#10b981]'
+                                : device.status === 'IDLE'
+                                  ? 'bg-yellow-400'
+                                  : 'bg-zinc-600'
+                            }`}
+                          />
+                          {isSelected && (
+                            <motion.div
+                              className="absolute inset-0 rounded-full bg-cyan-400"
+                              animate={{
+                                scale: [1, 2.5, 1],
+                                opacity: [0.6, 0, 0.6],
+                              }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            />
+                          )}
+                        </div>
+
+                        {/* Device info */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span
+                              className={`text-xs truncate ${
+                                isSelected ? 'text-cyan-200 font-medium' : 'text-zinc-200'
+                              }`}
+                            >
+                              {device.name}
+                            </span>
+                            <span className="shrink-0 text-[10px] text-zinc-500 tabular-nums">
+                              {formatLastSeen(device.lastSeenAt)}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-zinc-500">
+                            {device.status === 'ONLINE'
+                              ? `${Math.round(device.lastSpeed ?? 0)} km/h`
+                              : device.status === 'IDLE'
+                                ? 'Idle'
+                                : 'Offline'}
+                            {device.vehiclePlate ? ` • ${device.vehiclePlate}` : ''}
+                          </div>
+                        </div>
+
+                        {/* Map pin */}
+                        <MapPin
+                          className={`h-3.5 w-3.5 shrink-0 ${
+                            isSelected
+                              ? 'text-cyan-300'
+                              : hasLocation
+                                ? 'text-cyan-300/30'
+                                : 'text-zinc-700'
+                          }`}
+                        />
+                      </motion.button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-white/5 px-3 py-2 flex items-center justify-between">
+              <span className="text-[10px] text-zinc-600">
+                {devices.length} ditampilkan
+              </span>
+              <span className="text-[10px] text-zinc-600 flex items-center gap-1">
+                <div className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse" />
+                LIVE
               </span>
             </div>
-            <motion.div
-              animate={{ rotate: expanded ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronUp className="h-4 w-4 text-zinc-400" />
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Search bar */}
-        <div className="px-3 pb-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Cari nama atau plat..."
-              className="w-full rounded-xl border border-white/10 bg-white/5 pl-9 pr-8 py-2 text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-cyan-500/40 focus:outline-none transition"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => onSearchChange('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Device list — scrollable within the sheet */}
-        <div
-          className="overflow-y-auto px-3 pb-3"
-          style={{ height: EXPANDED_HEIGHT - 110 }}
-        >
-          {isLoading ? (
-            <div className="py-4 text-center text-xs text-zinc-500">
-              Memuat perangkat...
-            </div>
-          ) : devices.length === 0 ? (
-            <div className="py-4 text-center text-xs text-zinc-500">
-              {searchQuery ? 'Tidak ditemukan' : 'Belum ada perangkat'}
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {devices.map((device) => {
-                const isSelected = device.id === selectedDeviceId;
-                const hasLocation =
-                  device.lastLatitude != null && device.lastLongitude != null;
-
-                return (
-                  <motion.button
-                    key={device.id}
-                    onClick={() => handleDeviceTap(device.id)}
-                    disabled={!hasLocation}
-                    whileTap={hasLocation ? { scale: 0.97 } : {}}
-                    className={`
-                      flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors
-                      ${isSelected
-                        ? 'border-cyan-500/50 bg-cyan-500/10'
-                        : 'border-white/5 bg-white/[0.02] active:bg-white/5'
-                      }
-                      ${!hasLocation ? 'opacity-50' : ''}
-                    `}
-                  >
-                    {/* Status dot */}
-                    <div className="relative shrink-0">
-                      <div
-                        className={`h-2.5 w-2.5 rounded-full ${
-                          device.status === 'ONLINE'
-                            ? 'bg-emerald-400 shadow-[0_0_6px_#10b981]'
-                            : device.status === 'IDLE'
-                              ? 'bg-yellow-400'
-                              : 'bg-zinc-600'
-                        }`}
-                      />
-                      {isSelected && (
-                        <motion.div
-                          className="absolute inset-0 rounded-full bg-cyan-400"
-                          animate={{ scale: [1, 2.5, 1], opacity: [0.6, 0, 0.6] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        />
-                      )}
-                    </div>
-
-                    {/* Device info */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span
-                          className={`text-xs truncate ${
-                            isSelected ? 'text-cyan-200 font-medium' : 'text-zinc-200'
-                          }`}
-                        >
-                          {device.name}
-                        </span>
-                        <span className="shrink-0 text-[10px] text-zinc-500 tabular-nums">
-                          {formatLastSeen(device.lastSeenAt)}
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-zinc-500">
-                        {device.status === 'ONLINE'
-                          ? `${Math.round(device.lastSpeed ?? 0)} km/h`
-                          : device.status === 'IDLE'
-                            ? 'Idle'
-                            : 'Offline'}
-                        {device.vehiclePlate ? ` • ${device.vehiclePlate}` : ''}
-                      </div>
-                    </div>
-
-                    {/* Map pin */}
-                    <MapPin
-                      className={`h-3.5 w-3.5 shrink-0 ${
-                        isSelected
-                          ? 'text-cyan-300'
-                          : hasLocation
-                            ? 'text-cyan-300/40'
-                            : 'text-zinc-700'
-                      }`}
-                    />
-                  </motion.button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
