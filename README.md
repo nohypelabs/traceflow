@@ -263,14 +263,15 @@ Password: admin112233
    - **Mock / Testing** untuk simulator lokal
 4. Isi nama dan data kendaraan. Untuk tracker/API, isi juga IMEI/Device ID unik;
    metode GPS HP membuat ID internal secara otomatis
-5. Klik **Simpan Perangkat**
-6. Gunakan request guide yang muncul untuk mengirim lokasi pertama
+5. Untuk GPS HP, klik **Simpan & Aktifkan GPS**. TraceFlow langsung membuka
+   halaman aktivasi dengan device baru sudah terpilih
+6. Untuk tracker/API/mock, gunakan request guide yang muncul untuk mengirim lokasi pertama
 
 ### Testing dengan GPS HP
 
 1. Tambahkan perangkat menggunakan metode **GPS HP** tanpa mengisi IMEI/Device ID
-2. Buka `/phone-tracker` dari deployment HTTPS melalui HP
-3. Login, pilih device, lalu tekan **Mulai Tracking**
+2. TraceFlow langsung membuka tracker untuk device yang baru dibuat
+3. Tekan **Izinkan Lokasi & Mulai Tracking**
 4. Izinkan lokasi presisi dan biarkan halaman tetap terbuka
 5. Pantau posisi yang masuk melalui halaman **Peta Live**
 

@@ -3,6 +3,7 @@
 import type { Device } from '@/types';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api-provider';
 import {
   AlertTriangle,
@@ -59,6 +60,7 @@ const selectClass = `${inputClass} [color-scheme:dark]`;
 const optionClass = 'bg-zinc-950 text-white';
 
 export default function DevicesPage() {
+  const router = useRouter();
   const utils = api.useUtils();
   const [showCreate, setShowCreate] = useState(false);
   const [createdIntegration, setCreatedIntegration] = useState<CreatedIntegration | null>(null);
@@ -73,12 +75,20 @@ export default function DevicesPage() {
   const createMutation = api.device.create.useMutation({
     onSuccess: async (device, variables) => {
       await utils.device.list.invalidate();
+      const method = variables.providerConfig?.integrationMode ?? 'TRACKER_WEBHOOK';
+
+      if (method === 'PHONE_GPS') {
+        setShowCreate(false);
+        router.push(`/phone-tracker?deviceId=${encodeURIComponent(device.id)}`);
+        return;
+      }
+
       setCreatedIntegration({
         deviceId: device.id,
         name: device.name,
         identifier: device.imei,
         provider: device.provider,
-        method: variables.providerConfig?.integrationMode ?? 'TRACKER_WEBHOOK',
+        method,
       });
       setShowCreate(false);
     },
@@ -541,7 +551,7 @@ function CreateDeviceForm({
             </Button>
             <NeonButton type="submit" disabled={isPending}>
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-              Simpan Perangkat
+              {method === 'PHONE_GPS' ? 'Simpan & Aktifkan GPS' : 'Simpan Perangkat'}
             </NeonButton>
           </div>
         </form>
@@ -619,8 +629,8 @@ function MethodNotice({
           Browser GPS tracker
         </div>
         <p className="mt-1 text-xs leading-relaxed text-violet-100/80">
-          Setelah disimpan, buka halaman GPS HP menggunakan HTTPS, pilih device ini,
-          lalu izinkan akses lokasi. Webhook secret tidak dikirim ke browser.
+          Setelah disimpan, TraceFlow langsung membuka aktivasi GPS untuk device ini.
+          Izinkan akses lokasi di browser HP; webhook secret tidak dikirim ke browser.
         </p>
       </div>
     );

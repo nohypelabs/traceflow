@@ -268,7 +268,7 @@ function PhoneTrackerContent() {
                   onClick={startTracking}
                 >
                   <Radio className="h-4 w-4" />
-                  Mulai Tracking
+                  Izinkan Lokasi & Mulai Tracking
                 </NeonButton>
               )}
 
@@ -343,7 +343,7 @@ function PhoneTrackerContent() {
             <ol className="mt-3 space-y-2 text-xs leading-relaxed text-cyan-50/80">
               <li>1. Buka deployment HTTPS TraceFlow dari HP.</li>
               <li>2. Login menggunakan akun dashboard.</li>
-              <li>3. Pilih device GPS HP dan tekan Mulai Tracking.</li>
+              <li>3. Tekan Izinkan Lokasi & Mulai Tracking.</li>
               <li>4. Izinkan lokasi presisi, lalu cek halaman Peta Live.</li>
             </ol>
           </CyberCard>
