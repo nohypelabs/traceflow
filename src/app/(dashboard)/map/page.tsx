@@ -186,7 +186,7 @@ export default function MapPage() {
                 </button>
               )}
 
-              {/* ── Device Dropdown (mobile + desktop when sidebar hidden) ── */}
+              {/* ── Device Dropdown (top-right, all screen sizes) ── */}
               <DeviceDropdown
                 devices={filteredDevices}
                 allDevicesCount={devices.length}
@@ -195,6 +195,15 @@ export default function MapPage() {
                 isLoading={devicesQuery.isLoading}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
+                onSelectDevice={handleSelectDevice}
+              />
+
+              {/* ── Mobile Bottom Sheet (lg:hidden) ── */}
+              <MobileDeviceSheet
+                devices={filteredDevices}
+                onlineCount={onlineCount}
+                selectedDeviceId={selectedDeviceId}
+                isLoading={devicesQuery.isLoading}
                 onSelectDevice={handleSelectDevice}
               />
             </div>
@@ -618,6 +627,155 @@ function DeviceDropdown({
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Mobile Bottom Sheet (peek + expand, no search — search is in dropdown) ──
+
+const SHEET_PEEK = 140;
+const SHEET_EXPANDED = 400;
+
+function MobileDeviceSheet({
+  devices,
+  onlineCount,
+  selectedDeviceId,
+  isLoading,
+  onSelectDevice,
+}: {
+  devices: Array<{
+    id: string;
+    name: string;
+    status: string;
+    lastLatitude: number | null;
+    lastLongitude: number | null;
+    lastSeenAt: Date | string | null;
+    lastSpeed: number | null;
+    vehiclePlate: string | null;
+  }>;
+  onlineCount: number;
+  selectedDeviceId: string | null;
+  isLoading: boolean;
+  onSelectDevice: (id: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const isDragging = useRef(false);
+
+  const handleDragEnd = (_: any, info: { offset: { y: number }; velocity: { y: number } }) => {
+    isDragging.current = false;
+    if (info.velocity.y < -200 || info.offset.y < -30) {
+      setExpanded(true);
+    } else if (info.velocity.y > 200 || info.offset.y > 30) {
+      setExpanded(false);
+    }
+  };
+
+  return (
+    <div className="absolute inset-x-0 bottom-0 z-[750] lg:hidden pointer-events-none">
+      <motion.div
+        className="pointer-events-auto mx-2 mb-2 rounded-2xl border border-white/10 bg-zinc-950/95 backdrop-blur-xl"
+        drag="y"
+        dragConstraints={{ top: -(SHEET_EXPANDED - SHEET_PEEK), bottom: 0 }}
+        dragElastic={0.1}
+        dragMomentum={false}
+        onDragStart={() => { isDragging.current = true; }}
+        onDragEnd={handleDragEnd}
+        animate={{ y: expanded ? -(SHEET_EXPANDED - SHEET_PEEK) : 0 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+        style={{
+          height: SHEET_EXPANDED,
+          boxShadow: '0 -4px 30px rgba(0,0,0,0.5), 0 0 40px rgba(6,182,212,0.05)',
+        }}
+      >
+        {/* Handle */}
+        <div
+          onClick={() => { if (!isDragging.current) setExpanded((v) => !v); }}
+          className="flex flex-col items-center pt-2.5 pb-1.5 px-4 cursor-grab active:cursor-grabbing"
+        >
+          <div className="w-10 h-1 rounded-full bg-zinc-500 mb-2.5" />
+          <div className="w-full flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] tracking-[1.5px] text-zinc-300 font-medium">
+                PERANGKAT
+              </span>
+              <span className="text-[10px] text-zinc-500">{onlineCount}/{devices.length}</span>
+            </div>
+            <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown className="h-4 w-4 text-zinc-400" />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Device list */}
+        <div className="overflow-y-auto px-3 pb-3" style={{ height: SHEET_EXPANDED - 70 }}>
+          {isLoading ? (
+            <div className="py-4 text-center text-xs text-zinc-500">Memuat...</div>
+          ) : devices.length === 0 ? (
+            <div className="py-4 text-center text-xs text-zinc-500">Belum ada perangkat</div>
+          ) : (
+            <div className="space-y-1.5">
+              {devices.map((device) => {
+                const isSelected = device.id === selectedDeviceId;
+                const hasLocation = device.lastLatitude != null && device.lastLongitude != null;
+
+                return (
+                  <motion.button
+                    key={device.id}
+                    onClick={() => { onSelectDevice(device.id); setExpanded(false); }}
+                    disabled={!hasLocation}
+                    whileTap={hasLocation ? { scale: 0.97 } : {}}
+                    className={`
+                      flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors
+                      ${isSelected
+                        ? 'border-cyan-500/40 bg-cyan-500/10'
+                        : 'border-white/5 bg-white/[0.02] active:bg-white/5'
+                      }
+                      ${!hasLocation ? 'opacity-40' : ''}
+                    `}
+                  >
+                    <div className="relative shrink-0">
+                      <div className={`h-2.5 w-2.5 rounded-full ${
+                        device.status === 'ONLINE'
+                          ? 'bg-emerald-400 shadow-[0_0_6px_#10b981]'
+                          : device.status === 'IDLE' ? 'bg-yellow-400' : 'bg-zinc-600'
+                      }`} />
+                      {isSelected && (
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-cyan-400"
+                          animate={{ scale: [1, 2.5, 1], opacity: [0.6, 0, 0.6] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`text-xs truncate ${isSelected ? 'text-cyan-200 font-medium' : 'text-zinc-200'}`}>
+                          {device.name}
+                        </span>
+                        <span className="shrink-0 text-[10px] text-zinc-500 tabular-nums">
+                          {formatLastSeen(device.lastSeenAt)}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-zinc-500">
+                        {device.status === 'ONLINE'
+                          ? `${Math.round(device.lastSpeed ?? 0)} km/h`
+                          : device.status === 'IDLE' ? 'Idle' : 'Offline'}
+                        {device.vehiclePlate ? ` • ${device.vehiclePlate}` : ''}
+                      </div>
+                    </div>
+
+                    <MapPin className={`h-3.5 w-3.5 shrink-0 ${
+                      isSelected ? 'text-cyan-300' : hasLocation ? 'text-cyan-300/30' : 'text-zinc-700'
+                    }`} />
+                  </motion.button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }
