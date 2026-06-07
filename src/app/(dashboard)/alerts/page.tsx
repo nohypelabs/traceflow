@@ -141,12 +141,12 @@ function AlertRow({ alert, onMarkRead, onDelete }: { alert: AlertWithDevice; onM
       <div className="mt-0.5">{typeIcon}</div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="font-medium text-white/95">{alert.message}</span>
+          <span className="font-medium text-zinc-900 dark:text-white/95">{alert.message}</span>
           <span className={`rounded px-1.5 py-px text-[10px] font-mono tracking-wider ${sev === 'CRITICAL' ? 'bg-red-500/20 text-red-400' : sev === 'WARNING' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-cyan-500/20 text-cyan-400'}`}>
             {sev}
           </span>
         </div>
-        <div className="mt-1 flex items-center gap-3 text-xs text-white/50">
+        <div className="mt-1 flex items-center gap-3 text-xs text-zinc-400 dark:text-white/50">
           {alert.device?.name && <span className="font-mono text-cyan-400/70">{alert.device.name}</span>}
           <span>{alert.triggeredAt.toLocaleString('id-ID')}</span>
         </div>

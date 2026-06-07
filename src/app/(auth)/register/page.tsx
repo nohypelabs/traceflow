@@ -158,7 +158,7 @@ export default function RegisterPage() {
                     minLength={8}
                     autoComplete="new-password"
                     placeholder="••••••••"
-                    className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-3 pr-12 text-sm text-white placeholder:text-zinc-600 focus:border-cyan-500/60 focus:bg-zinc-950/80 focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
+                    className="futuristic-input w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-3 pr-12 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-600 focus:border-cyan-500/60 focus:bg-zinc-950/80 focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
                   />
                   <button
                     type="button"

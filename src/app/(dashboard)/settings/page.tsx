@@ -31,7 +31,7 @@ export default function SettingsPage() {
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition ${active ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200'}`}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition ${active ? 'bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200'}`}
             >
               <Icon className="h-4 w-4" /> {t.label}
             </button>

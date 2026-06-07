@@ -506,15 +506,15 @@ export default function DashboardPage() {
                         >
                           <AlertTriangle className={`mt-0.5 h-4 w-4 shrink-0 ${iconColor}`} />
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 text-sm font-medium leading-snug text-white/95">
+                            <div className="flex items-center gap-1.5 text-sm font-medium leading-snug text-zinc-900 dark:text-white/95">
                               {alert.device?.name && (
-                                <span className="font-mono text-[11px] text-white/60 group-hover:text-white/80 transition">
+                                <span className="font-mono text-[11px] text-zinc-400 dark:text-white/60 group-hover:text-zinc-600 dark:group-hover:text-white/80 transition">
                                   {alert.device.name}
                                 </span>
                               )}
                               <span className="line-clamp-1">{alert.message}</span>
                             </div>
-                            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-white/50">
+                            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-zinc-400 dark:text-white/50">
                               <Clock className="h-3 w-3" />
                               {alert.triggeredAt.toLocaleString('id-ID', {
                                 month: 'short',

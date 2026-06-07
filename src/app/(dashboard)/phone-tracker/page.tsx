@@ -30,7 +30,7 @@ interface PhonePosition {
 }
 
 const selectClass =
-  'futuristic-input w-full rounded-xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/80 dark:bg-zinc-950/80 bg-white/80 px-4 py-3 text-sm text-white outline-none [color-scheme:dark] focus:border-violet-400/50';
+  'futuristic-input w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-950/8080 px-4 py-3 text-sm text-white outline-none [color-scheme:dark] focus:border-violet-400/50';
 
 export default function PhoneTrackerPage() {
   return (
@@ -202,7 +202,7 @@ function PhoneTrackerContent() {
                 <Smartphone className="h-5 w-5 text-violet-200" />
               </div>
               <div>
-                <h2 className="font-medium text-white">Jadikan HP sebagai GPS tracker</h2>
+                <h2 className="font-medium text-zinc-900 dark:text-white">Jadikan HP sebagai GPS tracker</h2>
                 <p className="mt-1 text-sm leading-relaxed text-zinc-300">
                   Pilih device, izinkan akses lokasi, lalu biarkan halaman tetap terbuka.
                   Lokasi dikirim ke pipeline TraceFlow setiap maksimal 5 detik.
@@ -221,14 +221,14 @@ function PhoneTrackerContent() {
                 className={selectClass}
               >
                 {compatibleDevices.length === 0 && (
-                  <option className="bg-zinc-950 text-white" value="">
+                  <option className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white" value="">
                     Belum ada device GPS HP
                   </option>
                 )}
                 {compatibleDevices.map((device) => (
                   <option
                     key={device.id}
-                    className="bg-zinc-950 text-white"
+                    className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white"
                     value={device.id}
                   >
                     {device.name} ({device.imei})
@@ -379,7 +379,7 @@ function MetricCard({
         <span className="text-violet-200">{icon}</span>
         {label}
       </div>
-      <div className="mt-2 font-mono text-lg text-white">{value}</div>
+      <div className="mt-2 font-mono text-lg text-zinc-900 dark:text-white">{value}</div>
     </CyberCard>
   );
 }

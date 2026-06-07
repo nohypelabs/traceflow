@@ -55,9 +55,9 @@ interface CreatedIntegration {
 }
 
 const inputClass =
-  'futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm text-white outline-none transition focus:border-cyan-400/50';
+  'futuristic-input w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none transition focus:border-cyan-400/50';
 const selectClass = `${inputClass} [color-scheme:dark]`;
-const optionClass = 'bg-zinc-950 text-white';
+const optionClass = 'bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white';
 
 export default function DevicesPage() {
   const router = useRouter();
@@ -584,7 +584,7 @@ function MethodCard({
       }`}
     >
       <div className={active ? 'text-cyan-300' : 'text-zinc-200'}>{icon}</div>
-      <div className="mt-3 text-sm font-medium text-white">{title}</div>
+      <div className="mt-3 text-sm font-medium text-zinc-900 dark:text-white">{title}</div>
       <p className="mt-1 text-xs leading-relaxed text-zinc-300">{description}</p>
     </button>
   );
