@@ -633,8 +633,8 @@ function DeviceDropdown({
 
 // ── Mobile Bottom Sheet (peek + expand, no search — search is in dropdown) ──
 
-const SHEET_PEEK = 140;
-const SHEET_EXPANDED = 400;
+const SHEET_PEEK = 260;
+const SHEET_EXPANDED = 460;
 
 function MobileDeviceSheet({
   devices,
@@ -659,7 +659,18 @@ function MobileDeviceSheet({
   onSelectDevice: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [search, setSearch] = useState('');
   const isDragging = useRef(false);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return devices;
+    return devices.filter(
+      (d) =>
+        d.name.toLowerCase().includes(q) ||
+        (d.vehiclePlate?.toLowerCase().includes(q) ?? false),
+    );
+  }, [devices, search]);
 
   const handleDragEnd = (_: any, info: { offset: { y: number }; velocity: { y: number } }) => {
     isDragging.current = false;
@@ -668,6 +679,12 @@ function MobileDeviceSheet({
     } else if (info.velocity.y > 200 || info.offset.y > 30) {
       setExpanded(false);
     }
+  };
+
+  const handleDeviceTap = (deviceId: string) => {
+    onSelectDevice(deviceId);
+    setExpanded(false);
+    setSearch('');
   };
 
   return (
@@ -692,7 +709,7 @@ function MobileDeviceSheet({
           onClick={() => { if (!isDragging.current) setExpanded((v) => !v); }}
           className="flex flex-col items-center pt-2.5 pb-1.5 px-4 cursor-grab active:cursor-grabbing"
         >
-          <div className="w-10 h-1 rounded-full bg-zinc-500 mb-2.5" />
+          <div className="w-10 h-1 rounded-full bg-zinc-500 mb-2" />
           <div className="w-full flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -707,22 +724,46 @@ function MobileDeviceSheet({
           </div>
         </div>
 
+        {/* Search bar */}
+        <div className="px-3 pb-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari nama atau plat..."
+              className="w-full rounded-xl border border-white/10 bg-white/5 pl-9 pr-8 py-2 text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-cyan-500/40 focus:outline-none transition"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Device list */}
-        <div className="overflow-y-auto px-3 pb-3" style={{ height: SHEET_EXPANDED - 70 }}>
+        <div className="overflow-y-auto px-3 pb-3" style={{ height: SHEET_EXPANDED - 110 }}>
           {isLoading ? (
             <div className="py-4 text-center text-xs text-zinc-500">Memuat...</div>
-          ) : devices.length === 0 ? (
-            <div className="py-4 text-center text-xs text-zinc-500">Belum ada perangkat</div>
+          ) : filtered.length === 0 ? (
+            <div className="py-4 text-center text-xs text-zinc-500">
+              {search ? 'Tidak ditemukan' : 'Belum ada perangkat'}
+            </div>
           ) : (
             <div className="space-y-1.5">
-              {devices.map((device) => {
+              {filtered.map((device) => {
                 const isSelected = device.id === selectedDeviceId;
                 const hasLocation = device.lastLatitude != null && device.lastLongitude != null;
 
                 return (
                   <motion.button
                     key={device.id}
-                    onClick={() => { onSelectDevice(device.id); setExpanded(false); }}
+                    onClick={() => handleDeviceTap(device.id)}
                     disabled={!hasLocation}
                     whileTap={hasLocation ? { scale: 0.97 } : {}}
                     className={`
