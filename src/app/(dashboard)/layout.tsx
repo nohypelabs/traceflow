@@ -17,14 +17,14 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-zinc-950">
+    <div className="flex h-screen bg-zinc-950 dark:bg-zinc-950 bg-white">
       {/* Animated GPS Network Background */}
       <GpsNetworkBackground />
 
       {/* Desktop Sidebar with Framer Motion width animation */}
       <div className="hidden md:block relative z-10">
         <motion.div
-          className="flex h-screen flex-col overflow-hidden border-r border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl"
+          className="flex h-screen flex-col overflow-hidden border-r border-white/[0.06] dark:border-white/[0.06] border-zinc-200 bg-zinc-950/80 dark:bg-zinc-950/80 bg-white/90 backdrop-blur-xl"
           animate={{ width: sidebarCollapsed ? 64 : 256 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
@@ -52,7 +52,7 @@ export default function DashboardLayout({
 
             {/* Sidebar panel */}
             <motion.div 
-              className="fixed inset-y-0 left-0 w-64 z-50 flex h-screen flex-col border-r border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl md:hidden"
+              className="fixed inset-y-0 left-0 w-64 z-50 flex h-screen flex-col border-r border-white/[0.06] dark:border-white/[0.06] border-zinc-200 bg-zinc-950/80 dark:bg-zinc-950/80 bg-white/90 backdrop-blur-xl md:hidden"
               initial={{ x: -256 }}
               animate={{ x: 0 }}
               exit={{ x: -256 }}
@@ -71,7 +71,7 @@ export default function DashboardLayout({
       {/* Main content */}
       <div className="relative z-10 flex flex-1 flex-col overflow-hidden">
         {/* Demo banner for client */}
-        <div className="relative z-20 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600/10 via-cyan-500/15 to-blue-600/10 border-b border-cyan-500/10 px-4 py-1.5">
+        <div className="relative z-20 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600/10 via-cyan-500/15 to-blue-600/10 dark:from-cyan-600/10 dark:via-cyan-500/15 dark:to-blue-600/10 from-cyan-600/5 via-cyan-500/8 to-blue-600/5 border-b border-cyan-500/10 dark:border-cyan-500/10 border-cyan-500/15 px-4 py-1.5">
           <div className="flex items-center gap-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5">
             <div className="h-1 w-1 rounded-full bg-cyan-400 animate-pulse" />
             <span className="text-[9px] font-mono font-medium tracking-[2px] text-cyan-400">
@@ -82,8 +82,8 @@ export default function DashboardLayout({
             Custom-built for <span className="font-semibold text-cyan-300">{CLIENT_NAME}</span>
           </span>
           <div className="h-2.5 w-px bg-white/[0.06]" />
-          <span className="text-[10px] text-zinc-600">
-            by <span className="font-semibold text-zinc-400">NoHype</span>
+          <span className="text-[10px] text-zinc-600 dark:text-zinc-600 text-zinc-400">
+            by <span className="font-semibold text-zinc-400 dark:text-zinc-400 text-zinc-500">NoHype</span>
           </span>
         </div>
 
@@ -93,7 +93,7 @@ export default function DashboardLayout({
         </main>
 
         {/* Footer */}
-        <footer className="relative z-10 border-t border-white/[0.04] bg-zinc-950/60 backdrop-blur-sm px-6 py-3">
+        <footer className="relative z-10 border-t border-white/[0.04] dark:border-white/[0.04] border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-zinc-50/80 backdrop-blur-sm px-6 py-3">
           {/* Top gradient line */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent" />
 

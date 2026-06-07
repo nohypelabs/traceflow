@@ -3,6 +3,7 @@
 import { signOut, useSession } from 'next-auth/react';
 import { Bell, LogOut, User, Wifi, WifiOff, Activity, Menu } from 'lucide-react';
 import { useSocket } from '@/hooks/use-socket';
+import { ThemeToggle } from './theme-toggle';
 
 interface HeaderProps {
   onToggleMobile?: () => void;
@@ -13,7 +14,7 @@ export function Header({ onToggleMobile }: HeaderProps) {
   const { isConnected } = useSocket();
 
   return (
-    <header className="relative flex h-14 items-center justify-between border-b border-white/[0.06] bg-zinc-950/60 backdrop-blur-lg px-6">
+    <header className="relative flex h-14 items-center justify-between border-b border-white/[0.06] dark:border-white/[0.06] border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-white/80 backdrop-blur-lg px-6">
       {/* Subtle gradient line at bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 
@@ -30,7 +31,7 @@ export function Header({ onToggleMobile }: HeaderProps) {
         )}
 
         {/* Connection status indicator */}
-        <div className="flex items-center gap-2 rounded-full bg-white/[0.03] border border-white/[0.06] px-3 py-1">
+        <div className="flex items-center gap-2 rounded-full bg-white/[0.03] dark:bg-white/[0.03] bg-zinc-100 border border-white/[0.06] dark:border-white/[0.06] border-zinc-200 px-3 py-1">
           {isConnected ? (
             <>
               <div className="relative">
@@ -54,10 +55,13 @@ export function Header({ onToggleMobile }: HeaderProps) {
 
       <div className="flex items-center gap-3">
         {/* Activity pulse */}
-        <div className="hidden md:flex items-center gap-2 rounded-full bg-white/[0.03] border border-white/[0.06] px-3 py-1">
+        <div className="hidden md:flex items-center gap-2 rounded-full bg-white/[0.03] dark:bg-white/[0.03] bg-zinc-100 border border-white/[0.06] dark:border-white/[0.06] border-zinc-200 px-3 py-1">
           <Activity className="h-3.5 w-3.5 text-blue-400 animate-pulse" />
           <span className="text-xs text-zinc-500">Monitoring</span>
         </div>
+
+        {/* Theme toggle */}
+        <ThemeToggle />
 
         {/* Notifications */}
         <button

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import { ApiProvider } from '@/lib/api-provider';
+import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Theme } from '@radix-ui/themes';
 import '@radix-ui/themes/styles.css';
 import './globals.css';
@@ -44,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/icons/icon-192x192.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
@@ -52,13 +53,15 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className="min-h-full flex flex-col">
-        <Theme appearance="dark" accentColor="blue" radius="medium">
-          <SessionProvider>
-            <ApiProvider>
-              {children}
-            </ApiProvider>
-          </SessionProvider>
-        </Theme>
+        <ThemeProvider>
+          <Theme appearance="inherit" accentColor="blue" radius="medium">
+            <SessionProvider>
+              <ApiProvider>
+                {children}
+              </ApiProvider>
+            </SessionProvider>
+          </Theme>
+        </ThemeProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `

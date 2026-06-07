@@ -63,7 +63,7 @@ export default function GeofencesPage() {
           <div className="flex h-64 flex-col items-center justify-center text-center">
             <MapPin className="mb-3 h-10 w-10 text-zinc-600" />
             <div className="text-sm text-zinc-400">Belum ada geofence</div>
-            <p className="text-xs text-zinc-500 mt-1">Buat zona untuk menerima peringatan masuk/keluar</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400 mt-1">Buat zona untuk menerima peringatan masuk/keluar</p>
           </div>
         )}
       </CyberCard>
@@ -78,10 +78,10 @@ function GeofenceRow({ geofence, onDelete }: { geofence: any; onDelete: (id: str
         <div className="h-9 w-9 rounded-full border border-white/20" style={{ backgroundColor: geofence.color || '#3b82f6' }} />
         <div>
           <div className="font-medium">{geofence.name}</div>
-          <div className="text-xs text-zinc-500">
+          <div className="text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400">
             {geofence.type === 'CIRCLE' ? `Lingkaran • ${geofence.radius}m radius` : 'Poligon'}
           </div>
-          {geofence.description && <div className="text-xs text-zinc-500 mt-0.5">{geofence.description}</div>}
+          {geofence.description && <div className="text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400 mt-0.5">{geofence.description}</div>}
         </div>
       </div>
       <div className="flex gap-2">

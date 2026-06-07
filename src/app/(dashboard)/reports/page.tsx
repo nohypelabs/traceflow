@@ -63,7 +63,7 @@ export default function ReportsPage() {
               <Calendar className="mr-2 h-4 w-4" /> {p === 'daily' ? 'Harian' : p === 'weekly' ? 'Mingguan' : 'Bulanan'}
             </Button>
           ))}
-          <div className="ml-auto text-xs text-zinc-500 tabular-nums">
+          <div className="ml-auto text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400 tabular-nums">
             {dateRange.start.toLocaleDateString('id-ID')} — {dateRange.end.toLocaleDateString('id-ID')}
           </div>
         </div>
@@ -91,9 +91,9 @@ export default function ReportsPage() {
           {reportData.topAlerts.length ? reportData.topAlerts.map((a, i) => (
             <div key={i} className="flex items-center justify-between py-1.5 text-sm border-b border-white/5 last:border-0">
               <span>{a.type}</span>
-              <span className="font-mono text-cyan-400">{a.count} <span className="text-xs text-zinc-500">({a.percentage.toFixed(0)}%)</span></span>
+              <span className="font-mono text-cyan-400">{a.count} <span className="text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400">({a.percentage.toFixed(0)}%)</span></span>
             </div>
-          )) : <div className="text-sm text-zinc-500">Tidak ada data</div>}
+          )) : <div className="text-sm text-zinc-500 dark:text-zinc-500 text-zinc-400">Tidak ada data</div>}
         </CyberCard>
 
         <CyberCard className="p-5">
@@ -109,7 +109,7 @@ export default function ReportsPage() {
                 <div>{d.distance.toFixed(0)} km<br /><span className="text-zinc-500">jarak</span></div>
               </div>
             </div>
-          )) : <div className="text-sm text-zinc-500">Tidak ada data</div>}
+          )) : <div className="text-sm text-zinc-500 dark:text-zinc-500 text-zinc-400">Tidak ada data</div>}
         </CyberCard>
       </div>
     </PageWrapper>

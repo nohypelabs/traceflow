@@ -54,7 +54,7 @@ export default function LoginPage() {
     <FadeIn>
       <ScaleIn>
         {/* Main holographic card */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/80 shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_20px_70px_-15px_rgb(0,0,0)] backdrop-blur-2xl">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/80 dark:bg-zinc-950/80 bg-white/90 shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_20px_70px_-15px_rgb(0,0,0)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_20px_70px_-15px_rgb(0,0,0)] shadow-[0_4px_24px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
           {/* Holographic gradient overlays */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_15%,rgba(6,182,212,0.08),transparent_55%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_85%,rgba(139,92,246,0.05),transparent_60%)]" />
@@ -71,16 +71,16 @@ export default function LoginPage() {
                   <div className="absolute -inset-1 rounded-full border border-cyan-400/40" />
                 </div>
               </div>
-              <div className="font-mono text-2xl font-semibold tracking-[4px] text-white">TRACEFLOW</div>
+              <div className="font-mono text-2xl font-semibold tracking-[4px] text-white dark:text-white text-zinc-900">TRACEFLOW</div>
               <div className="mt-0.5 text-[10px] tracking-[3px] text-cyan-400/70">COMMAND CENTER ACCESS</div>
             </div>
 
             <div className="mb-6 text-center">
-              <div className="text-sm text-zinc-400">Autentikasi untuk mengakses jaringan pelacakan waktu nyata</div>
+              <div className="text-sm text-zinc-400 dark:text-zinc-400 text-zinc-500">Autentikasi untuk mengakses jaringan pelacakan waktu nyata</div>
             </div>
 
             {/* Demo Access Panel — sleek telemetry style */}
-            <div className="mb-6 rounded-xl border border-white/10 bg-black/40 p-4">
+            <div className="mb-6 rounded-xl border border-white/10 dark:border-white/10 border-zinc-200 bg-black/40 dark:bg-black/40 bg-zinc-50 p-4">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-[10px] font-medium tracking-[1.5px] text-emerald-400/90">
                   <Shield className="h-3.5 w-3.5" />
@@ -96,11 +96,11 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between rounded-lg border border-white/5 bg-zinc-950/60 px-3 py-2 text-xs">
-                  <div className="flex items-center gap-2 text-zinc-500">
+                <div className="flex items-center justify-between rounded-lg border border-white/5 dark:border-white/5 border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-white px-3 py-2 text-xs">
+                  <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-500 text-zinc-400">
                     <span className="font-mono text-[10px]">EMAIL</span>
                   </div>
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-300">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-300 dark:text-zinc-300 text-zinc-700">
                     admin@traceflow.com
                     <button
                       type="button"
@@ -112,11 +112,11 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-white/5 bg-zinc-950/60 px-3 py-2 text-xs">
-                  <div className="flex items-center gap-2 text-zinc-500">
+                <div className="flex items-center justify-between rounded-lg border border-white/5 dark:border-white/5 border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-white px-3 py-2 text-xs">
+                  <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-500 text-zinc-400">
                     <span className="font-mono text-[10px]">PASS</span>
                   </div>
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-300">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-300 dark:text-zinc-300 text-zinc-700">
                     admin112233
                     <button
                       type="button"
@@ -153,7 +153,7 @@ export default function LoginPage() {
                   required
                   autoComplete="email"
                   placeholder="admin@traceflow.com"
-                  className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:border-cyan-500/60 focus:bg-zinc-950/80 focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
+                  className="futuristic-input w-full rounded-xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-white px-4 py-3 text-sm text-white dark:text-white text-zinc-900 placeholder:text-zinc-600 dark:placeholder:text-zinc-600 placeholder:text-zinc-400 focus:border-cyan-500/60 focus:bg-zinc-950/80 dark:focus:bg-zinc-950/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
                 />
               </div>
 
@@ -174,7 +174,7 @@ export default function LoginPage() {
                     required
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-3 pr-12 text-sm text-white placeholder:text-zinc-600 focus:border-cyan-500/60 focus:bg-zinc-950/80 focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
+                    className="futuristic-input w-full rounded-xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-white px-4 py-3 pr-12 text-sm text-white dark:text-white text-zinc-900 placeholder:text-zinc-600 dark:placeholder:text-zinc-600 placeholder:text-zinc-400 focus:border-cyan-500/60 focus:bg-zinc-950/80 dark:focus:bg-zinc-950/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
                   />
                   <button
                     type="button"
@@ -210,7 +210,7 @@ export default function LoginPage() {
             </form>
 
             {/* Footer link */}
-            <div className="mt-6 text-center text-xs text-zinc-500">
+            <div className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400">
               Tidak memiliki clearance?{' '}
               <a 
                 href="/register" 

@@ -40,6 +40,10 @@ export function GpsNetworkBackground({ className = '' }: { className?: string })
     const connectionDistance = 200;
     const nodes: Node[] = [];
 
+    function isDark(): boolean {
+      return document.documentElement.classList.contains('dark');
+    }
+
     const colors = [
       'rgba(59, 130, 246,',   // blue
       'rgba(6, 182, 212,',    // cyan
@@ -75,8 +79,9 @@ export function GpsNetworkBackground({ className = '' }: { className?: string })
       const w = canvas!.offsetWidth;
       const h = canvas!.offsetHeight;
       const gridSize = 50;
+      const dark = isDark();
 
-      ctx!.strokeStyle = 'rgba(59, 130, 246, 0.06)';
+      ctx!.strokeStyle = dark ? 'rgba(59, 130, 246, 0.06)' : 'rgba(59, 130, 246, 0.04)';
       ctx!.lineWidth = 0.5;
       ctx!.beginPath();
 
@@ -175,13 +180,19 @@ export function GpsNetworkBackground({ className = '' }: { className?: string })
     function animate(time: number): void {
       const w = canvas!.offsetWidth;
       const h = canvas!.offsetHeight;
+      const dark = isDark();
 
       ctx!.clearRect(0, 0, w, h);
 
       // Radial gradient atmosphere
       const bgGrad = ctx!.createRadialGradient(w * 0.3, h * 0.4, 0, w * 0.5, h * 0.5, w * 0.7);
-      bgGrad.addColorStop(0, 'rgba(59, 130, 246, 0.04)');
-      bgGrad.addColorStop(0.5, 'rgba(139, 92, 246, 0.02)');
+      if (dark) {
+        bgGrad.addColorStop(0, 'rgba(59, 130, 246, 0.04)');
+        bgGrad.addColorStop(0.5, 'rgba(139, 92, 246, 0.02)');
+      } else {
+        bgGrad.addColorStop(0, 'rgba(59, 130, 246, 0.02)');
+        bgGrad.addColorStop(0.5, 'rgba(139, 92, 246, 0.01)');
+      }
       bgGrad.addColorStop(1, 'transparent');
       ctx!.fillStyle = bgGrad;
       ctx!.fillRect(0, 0, w, h);

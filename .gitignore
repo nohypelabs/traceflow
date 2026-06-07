@@ -39,3 +39,5 @@ prisma/migrations/
 # IDE
 .vscode/
 .idea/
+/.docdex/
+/.docdex-state/

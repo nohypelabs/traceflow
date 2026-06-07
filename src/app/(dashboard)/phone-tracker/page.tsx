@@ -30,7 +30,7 @@ interface PhonePosition {
 }
 
 const selectClass =
-  'futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/80 px-4 py-3 text-sm text-white outline-none [color-scheme:dark] focus:border-violet-400/50';
+  'futuristic-input w-full rounded-xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/80 dark:bg-zinc-950/80 bg-white/80 px-4 py-3 text-sm text-white outline-none [color-scheme:dark] focus:border-violet-400/50';
 
 export default function PhoneTrackerPage() {
   return (

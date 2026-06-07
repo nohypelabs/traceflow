@@ -75,7 +75,7 @@ export default function RegisterPage() {
     <FadeIn>
       <ScaleIn>
         {/* Matching holographic card */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/80 shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_20px_70px_-15px_rgb(0,0,0)] backdrop-blur-2xl">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/80 dark:bg-zinc-950/80 bg-white/90 shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_20px_70px_-15px_rgb(0,0,0)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_20px_70px_-15px_rgb(0,0,0)] shadow-[0_4px_24px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
           {/* Holographic gradient overlays */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_15%,rgba(6,182,212,0.08),transparent_55%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_85%,rgba(139,92,246,0.05),transparent_60%)]" />
@@ -89,12 +89,12 @@ export default function RegisterPage() {
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-blue-500/10">
                 <UserPlus className="h-7 w-7 text-cyan-400" />
               </div>
-              <div className="font-mono text-2xl font-semibold tracking-[4px] text-white">TRACEFLOW</div>
+              <div className="font-mono text-2xl font-semibold tracking-[4px] text-white dark:text-white text-zinc-900">TRACEFLOW</div>
               <div className="mt-0.5 text-[10px] tracking-[3px] text-cyan-400/70">NEW OPERATOR REGISTRATION</div>
             </div>
 
             <div className="mb-6 text-center">
-              <div className="text-sm text-zinc-400">Buat akun untuk bergabung dengan jaringan pelacakan real-time</div>
+              <div className="text-sm text-zinc-400 dark:text-zinc-400 text-zinc-500">Buat akun untuk bergabung dengan jaringan pelacakan real-time</div>
             </div>
 
             {/* Error */}
@@ -119,7 +119,7 @@ export default function RegisterPage() {
                   required
                   autoComplete="name"
                   placeholder="Nama lengkap"
-                  className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:border-cyan-500/60 focus:bg-zinc-950/80 focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
+                  className="futuristic-input w-full rounded-xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-white px-4 py-3 text-sm text-white dark:text-white text-zinc-900 placeholder:text-zinc-600 dark:placeholder:text-zinc-600 placeholder:text-zinc-400 focus:border-cyan-500/60 focus:bg-zinc-950/80 dark:focus:bg-zinc-950/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
                 />
               </div>
 
@@ -136,7 +136,7 @@ export default function RegisterPage() {
                   required
                   autoComplete="email"
                   placeholder="email@anda.com"
-                  className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:border-cyan-500/60 focus:bg-zinc-950/80 focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
+                  className="futuristic-input w-full rounded-xl border border-white/10 dark:border-white/10 border-zinc-200 bg-zinc-950/60 dark:bg-zinc-950/60 bg-white px-4 py-3 text-sm text-white dark:text-white text-zinc-900 placeholder:text-zinc-600 dark:placeholder:text-zinc-600 placeholder:text-zinc-400 focus:border-cyan-500/60 focus:bg-zinc-950/80 dark:focus:bg-zinc-950/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
                 />
               </div>
 
@@ -211,7 +211,7 @@ export default function RegisterPage() {
             </form>
 
             {/* Footer */}
-            <div className="mt-6 text-center text-xs text-zinc-500">
+            <div className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-500 text-zinc-400">
               Sudah punya akun?{' '}
               <a 
                 href="/login" 

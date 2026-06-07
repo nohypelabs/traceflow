@@ -227,9 +227,19 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+:root .glass {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 /* Neon text effect */
 .neon-text {
   text-shadow: 0 0 7px #3b82f6, 0 0 10px #3b82f6, 0 0 21px #3b82f6, 0 0 42px #2563eb;
+}
+
+:root .neon-text {
+  text-shadow: 0 0 4px rgba(59, 130, 246, 0.3);
+  color: #1e40af;
 }
 
 /* Cyberpunk-style border */
@@ -253,6 +263,16 @@
   pointer-events: none;
 }
 
+:root .scan-lines::after {
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.03) 0px,
+    rgba(0, 0, 0, 0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+}
+
 /* ============================================
    Futuristic Auth Form Styles (Login / Register)
    ============================================ */
@@ -271,6 +291,14 @@
 
 .futuristic-input::placeholder {
   color: rgb(113 113 122 / 0.6);
+}
+
+:root .futuristic-input {
+  caret-color: #0891b2;
+}
+
+:root .futuristic-input::placeholder {
+  color: rgb(161 161 170 / 0.6);
 }
 
 /* Neon action button (gradient + sweep + glow) */
@@ -318,6 +346,12 @@
   overflow: hidden;
 }
 
+:root .rt-Card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
 /* Top accent glow line on cards */
 .rt-Card::before {
   content: '';
@@ -330,14 +364,26 @@
   pointer-events: none;
 }
 
+:root .rt-Card::before {
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.15), transparent);
+}
+
 /* Radix Heading — neon tint */
 .rt-Heading {
   color: rgb(228, 228, 231);
 }
 
+:root .rt-Heading {
+  color: rgb(24, 24, 27);
+}
+
 /* Radix Text — softer zinc */
 .rt-Text {
   color: rgb(161, 161, 170);
+}
+
+:root .rt-Text {
+  color: rgb(82, 82, 82);
 }
 
 /* Radix Badge — futuristic */
@@ -365,9 +411,27 @@
   color: rgb(161, 161, 170);
 }
 
+:root .rt-TabTrigger {
+  color: rgb(161, 161, 170);
+}
+
+:root .rt-TabTrigger:hover {
+  color: rgb(82, 82, 82);
+}
+
+:root .rt-TabTrigger[data-state='active'] {
+  color: rgb(8, 145, 178);
+  border-bottom-color: rgba(8, 145, 178, 0.5);
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);
+}
+
 /* Radix Separator — subtle line */
 .rt-Separator {
   background: rgba(255, 255, 255, 0.06);
+}
+
+:root .rt-Separator {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 /* Dashboard page input fields — match futuristic theme */
@@ -397,6 +461,29 @@ input::placeholder {
   color: rgb(113, 113, 122);
 }
 
+:root input[type="text"],
+:root input[type="email"],
+:root input[type="password"],
+:root input[type="url"],
+:root input[type="number"],
+:root select,
+:root textarea {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: rgb(24, 24, 27);
+}
+
+:root input:focus,
+:root select:focus,
+:root textarea:focus {
+  border-color: rgba(8, 145, 178, 0.5);
+  box-shadow: 0 0 0 1px rgba(8, 145, 178, 0.15);
+}
+
+:root input::placeholder {
+  color: rgb(161, 161, 170);
+}
+
 /* Table rows — hover glow */
 table tbody tr {
   transition: all 0.15s;
@@ -404,6 +491,10 @@ table tbody tr {
 
 table tbody tr:hover {
   background: rgba(6, 182, 212, 0.03);
+}
+
+:root table tbody tr:hover {
+  background: rgba(6, 182, 212, 0.05);
 }
 
 /* Scrollbar — dark theme */
@@ -423,6 +514,14 @@ table tbody tr:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.15);
+}
+
+:root ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+:root ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* Button hover glow */
