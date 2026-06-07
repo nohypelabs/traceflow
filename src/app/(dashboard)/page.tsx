@@ -292,7 +292,7 @@ export default function DashboardPage() {
           </StaggerItem>
         </StaggerContainer>
 
-        {/* Row 2 — Demo Mock Stats (jarak, kecepatan, utilization, geofence) */}
+        {/* Row 2 — Real Stats (jarak, kecepatan, utilization, geofence) */}
         <StaggerContainer className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
           {/* Jarak tempuh hari ini */}
           <StaggerItem>
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-cyan-400 md:text-[36px]"
                   style={{ textShadow: '0 0 20px rgba(6,182,212,0.2)' }}
                 >
-                  253.7
+                  {stats?.totalDistance ?? 0}
                   <span className="text-base text-zinc-500 ml-1">km</span>
                 </div>
                 {/* Mini sparkline - consistent visual height */}
@@ -316,7 +316,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-emerald-400/80">↑ 12% vs kemarin</div>
+                <div className="mt-1 text-xs text-emerald-400/80">{(stats?.totalDistance ?? 0) > 0 ? `${stats?.todayTrips ?? 0} trip hari ini` : 'Belum ada perjalanan'}</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
@@ -332,16 +332,16 @@ export default function DashboardPage() {
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-purple-400 md:text-[36px]"
                   style={{ textShadow: '0 0 20px rgba(139,92,246,0.2)' }}
                 >
-                  38
+                  {stats?.avgSpeed ?? 0}
                   <span className="text-base text-zinc-500 ml-1">km/h</span>
                 </div>
                 {/* Speed gauge bar - consistent visual height */}
                 <div className="mt-2 h-8 flex items-center">
                   <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-400" style={{ width: '48%' }} />
+                    <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-400" style={{ width: `${Math.min(((stats?.avgSpeed ?? 0) / 120) * 100, 100)}%` }} />
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-zinc-500">Max: 82 km/h</div>
+                <div className="mt-1 text-xs text-zinc-500">Max: {stats?.maxSpeed ?? 0} km/h</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
@@ -357,18 +357,21 @@ export default function DashboardPage() {
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-emerald-400 md:text-[36px]"
                   style={{ textShadow: '0 0 20px rgba(16,185,129,0.2)' }}
                 >
-                  67
+                  {stats?.fleetUtilPct ?? 0}
                   <span className="text-base text-zinc-500 ml-1">%</span>
                 </div>
                 {/* Progress dots - consistent visual height */}
                 <div className="mt-2 h-8 flex items-center">
                   <div className="flex gap-1 w-full">
-                    {Array.from({ length: 12 }).map((_, i) => (
-                      <div key={i} className={`h-2 flex-1 rounded-sm ${i < 8 ? 'bg-emerald-500/40' : 'bg-white/[0.06]'}`} />
-                    ))}
+                    {Array.from({ length: 12 }).map((_, i) => {
+                      const activeDots = Math.round(((stats?.fleetUtilPct ?? 0) / 100) * 12);
+                      return (
+                        <div key={i} className={`h-2 flex-1 rounded-sm ${i < activeDots ? 'bg-emerald-500/40' : 'bg-white/[0.06]'}`} />
+                      );
+                    })}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-zinc-500">8 dari 12 aktif</div>
+                <div className="mt-1 text-xs text-zinc-500">{stats?.onlineDevices ?? 0} dari {stats?.totalDevices ?? 0} aktif</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
@@ -384,20 +387,20 @@ export default function DashboardPage() {
                 <div className="font-mono text-3xl font-semibold tracking-tighter text-amber-400 md:text-[36px]"
                   style={{ textShadow: '0 0 20px rgba(245,158,11,0.2)' }}
                 >
-                  5
+                  {stats?.geofences?.length ?? 0}
                   <span className="text-base text-zinc-500 ml-1">zona</span>
                 </div>
                 {/* Geofence hex indicators - consistent visual height + wrap for mobile */}
                 <div className="mt-2 h-8 flex items-center">
                   <div className="flex flex-wrap gap-1 w-full">
-                    {['Gudang', 'Rute A', 'Area JKT', 'Pool', 'Client'].map((name, i) => (
-                      <div key={i} className="flex h-6 items-center justify-center rounded-md border border-amber-500/20 bg-amber-500/10 px-1.5">
-                        <span className="text-[8px] text-amber-400/80 truncate max-w-[48px]">{name}</span>
+                    {(stats?.geofences ?? []).map((g) => (
+                      <div key={g.id} className="flex h-6 items-center justify-center rounded-md border border-amber-500/20 bg-amber-500/10 px-1.5">
+                        <span className="text-[8px] text-amber-400/80 truncate max-w-[48px]">{g.name}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="mt-1 text-xs text-zinc-500">3 perangkat terlacak</div>
+                <div className="mt-1 text-xs text-zinc-500">{stats?.totalDevices ?? 0} perangkat terlacak</div>
               </div>
             </AnimatedBorder>
           </StaggerItem>
@@ -455,7 +458,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-white/10 flex justify-between text-[10px] text-zinc-500">
-                  <div>Total Distance Today: <span className="text-emerald-400 font-mono">253.7 km</span></div>
+                  <div>Total Distance Today: <span className="text-emerald-400 font-mono">{stats?.totalDistance ?? 0} km</span></div>
                   <div>Last Sync: <span className="text-cyan-400">just now</span></div>
                 </div>
               </div>

@@ -6,38 +6,66 @@ export const dashboardRouter = createTRPCRouter({
     const orgId = ctx.session.user.organizationId;
     const where = orgId ? { organizationId: orgId } : {};
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const [
       totalDevices,
       onlineDevices,
       idleDevices,
       offlineDevices,
       unreadAlerts,
+      todayTrips,
+      todayTripData,
+      geofences,
     ] = await Promise.all([
+      // Device counts
       prisma.device.count({ where }),
       prisma.device.count({ where: { ...where, status: 'ONLINE' } }),
       prisma.device.count({ where: { ...where, status: 'IDLE' } }),
       prisma.device.count({ where: { ...where, status: 'OFFLINE' } }),
+      // Alerts
       prisma.alert.count({
         where: {
           isRead: false,
-          ...(orgId
-            ? { device: { organizationId: orgId } }
-            : {}),
+          ...(orgId ? { device: { organizationId: orgId } } : {}),
+        },
+      }),
+      // Today's trip count
+      prisma.trip.count({
+        where: {
+          startedAt: { gte: today },
+          ...(orgId ? { device: { organizationId: orgId } } : {}),
+        },
+      }),
+      // Today's trip details (for distance + speed)
+      prisma.trip.findMany({
+        where: {
+          startedAt: { gte: today },
+          ...(orgId ? { device: { organizationId: orgId } } : {}),
+        },
+        select: {
+          distance: true,
+          averageSpeed: true,
+          maxSpeed: true,
+        },
+      }),
+      // Geofences
+      prisma.geofence.findMany({
+        where: orgId ? { organizationId: orgId } : {},
+        select: {
+          id: true,
+          name: true,
         },
       }),
     ]);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const todayTrips = await prisma.trip.count({
-      where: {
-        startedAt: { gte: today },
-        ...(orgId
-          ? { device: { organizationId: orgId } }
-          : {}),
-      },
-    });
+    // Calculate aggregated stats
+    const totalDistance = todayTripData.reduce((sum, t) => sum + (t.distance ?? 0), 0);
+    const speeds = todayTripData.filter((t) => t.averageSpeed != null).map((t) => t.averageSpeed!);
+    const avgSpeed = speeds.length > 0 ? Math.round(speeds.reduce((a, b) => a + b, 0) / speeds.length) : 0;
+    const maxSpeed = todayTripData.reduce((max, t) => Math.max(max, t.maxSpeed ?? 0), 0);
+    const fleetUtilPct = totalDevices > 0 ? Math.round(((onlineDevices + idleDevices) / totalDevices) * 100) : 0;
 
     return {
       totalDevices,
@@ -46,6 +74,12 @@ export const dashboardRouter = createTRPCRouter({
       offlineDevices,
       unreadAlerts,
       todayTrips,
+      // New real data
+      totalDistance: Math.round(totalDistance * 10) / 10, // 1 decimal
+      avgSpeed,
+      maxSpeed: Math.round(maxSpeed),
+      fleetUtilPct,
+      geofences,
     };
   }),
 
