@@ -258,7 +258,7 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey, se
     }, 10);
   }, [devices, selectedDeviceId]);
 
-  // Fly to selected device with smooth animation
+  // Fly to selected device with realistic multi-step traverse animation
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !selectedDeviceId) return;
@@ -266,10 +266,60 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey, se
     const device = devices.find((d) => d.id === selectedDeviceId);
     if (!device?.lastLatitude || !device?.lastLongitude) return;
 
-    map.flyTo([device.lastLatitude, device.lastLongitude], 15, {
-      duration: 1.2,
+    const targetLat = device.lastLatitude;
+    const targetLng = device.lastLongitude;
+    const targetZoom = 15;
+
+    const currentCenter = map.getCenter();
+    const currentZoom = map.getZoom();
+    const curLat = currentCenter.lat;
+    const curLng = currentCenter.lng;
+
+    // Calculate distance (rough degrees) to decide transition style
+    const dist = Math.sqrt(
+      Math.pow(targetLat - curLat, 2) + Math.pow(targetLng - curLng, 2)
+    );
+
+    // Short distance (< ~0.05 degrees ≈ 5km): single smooth fly, no multi-step needed
+    if (dist < 0.05) {
+      map.flyTo([targetLat, targetLng], targetZoom, {
+        duration: 0.8,
+        easeLinearity: 0.3,
+      });
+      return;
+    }
+
+    // Long distance: multi-step "traverse" animation
+    // Step 1: Zoom out to mid-level, fly toward midpoint between current and target
+    // Step 2: Fly to target, zoom in
+
+    const midLat = (curLat + targetLat) / 2;
+    const midLng = (curLng + targetLng) / 2;
+    const midZoom = Math.max(4, Math.min(currentZoom, 8));
+
+    // Clean up any pending moveend listener
+    const cleanup = () => {
+      map.off('moveend', onStep1End);
+    };
+
+    const onStep1End = () => {
+      map.off('moveend', onStep1End);
+
+      // Step 2: From midpoint, fly to actual device and zoom in
+      map.flyTo([targetLat, targetLng], targetZoom, {
+        duration: 1.4,
+        easeLinearity: 0.2,
+      });
+    };
+
+    // Step 1: Zoom out and pan toward midpoint
+    map.once('moveend', onStep1End);
+    map.flyTo([midLat, midLng], midZoom, {
+      duration: 0.9,
       easeLinearity: 0.25,
     });
+
+    return cleanup;
   }, [selectedDeviceId, devices]);
 
   // Handle explicit resizes from parent (sidebar toggle etc)
