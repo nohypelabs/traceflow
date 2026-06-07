@@ -31,6 +31,8 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey, se
   const markersRef = useRef<Map<string, any>>(new Map());
   const leafletRef = useRef<LeafletType | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const prevSelectedRef = useRef<string | null>(null);
+  const traverseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [devices, setDevices] = useState(initialDevices);
   const { socket } = useSocket();
 
@@ -202,6 +204,10 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey, se
 
     return () => {
       cancelled = true;
+      if (traverseTimerRef.current) {
+        clearTimeout(traverseTimerRef.current);
+        traverseTimerRef.current = null;
+      }
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;
@@ -258,29 +264,51 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey, se
     }, 10);
   }, [devices, selectedDeviceId]);
 
-  // Fly to selected device with realistic multi-step traverse animation
+  // Fly to selected device — direct on first click, multi-step traverse when switching
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !selectedDeviceId) return;
+    if (!map || !selectedDeviceId) {
+      prevSelectedRef.current = selectedDeviceId ?? null;
+      return;
+    }
 
     const device = devices.find((d) => d.id === selectedDeviceId);
-    if (!device?.lastLatitude || !device?.lastLongitude) return;
+    if (!device?.lastLatitude || !device?.lastLongitude) {
+      prevSelectedRef.current = selectedDeviceId;
+      return;
+    }
 
     const targetLat = device.lastLatitude;
     const targetLng = device.lastLongitude;
     const targetZoom = 15;
 
+    // Cancel any pending traverse step 2
+    if (traverseTimerRef.current) {
+      clearTimeout(traverseTimerRef.current);
+      traverseTimerRef.current = null;
+    }
+
+    const hadPrevious = prevSelectedRef.current != null;
+    prevSelectedRef.current = selectedDeviceId;
+
+    // First click (no previous device selected): direct flyTo
+    if (!hadPrevious) {
+      map.flyTo([targetLat, targetLng], targetZoom, {
+        duration: 1.2,
+        easeLinearity: 0.25,
+      });
+      return;
+    }
+
+    // Switching devices: calculate distance for transition style
     const currentCenter = map.getCenter();
     const currentZoom = map.getZoom();
-    const curLat = currentCenter.lat;
-    const curLng = currentCenter.lng;
-
-    // Calculate distance (rough degrees) to decide transition style
     const dist = Math.sqrt(
-      Math.pow(targetLat - curLat, 2) + Math.pow(targetLng - curLng, 2)
+      Math.pow(targetLat - currentCenter.lat, 2) +
+      Math.pow(targetLng - currentCenter.lng, 2)
     );
 
-    // Short distance (< ~0.05 degrees ≈ 5km): single smooth fly, no multi-step needed
+    // Short distance (< ~0.05 degrees ≈ 5km): single smooth fly
     if (dist < 0.05) {
       map.flyTo([targetLat, targetLng], targetZoom, {
         duration: 0.8,
@@ -289,37 +317,27 @@ export default function MapView({ devices: initialDevices, resizeKey, fitKey, se
       return;
     }
 
-    // Long distance: multi-step "traverse" animation
-    // Step 1: Zoom out to mid-level, fly toward midpoint between current and target
-    // Step 2: Fly to target, zoom in
-
-    const midLat = (curLat + targetLat) / 2;
-    const midLng = (curLng + targetLng) / 2;
+    // Long distance: multi-step traverse using setTimeout (avoids moveend pollution)
+    const midLat = (currentCenter.lat + targetLat) / 2;
+    const midLng = (currentCenter.lng + targetLng) / 2;
     const midZoom = Math.max(4, Math.min(currentZoom, 8));
 
-    // Clean up any pending moveend listener
-    const cleanup = () => {
-      map.off('moveend', onStep1End);
-    };
+    const step1Duration = 900; // ms, matches flyTo duration below
 
-    const onStep1End = () => {
-      map.off('moveend', onStep1End);
+    // Step 1: Zoom out and pan toward midpoint
+    map.flyTo([midLat, midLng], midZoom, {
+      duration: step1Duration / 1000,
+      easeLinearity: 0.25,
+    });
 
-      // Step 2: From midpoint, fly to actual device and zoom in
+    // Step 2: After step 1 completes, fly to actual device and zoom in
+    traverseTimerRef.current = setTimeout(() => {
+      traverseTimerRef.current = null;
       map.flyTo([targetLat, targetLng], targetZoom, {
         duration: 1.4,
         easeLinearity: 0.2,
       });
-    };
-
-    // Step 1: Zoom out and pan toward midpoint
-    map.once('moveend', onStep1End);
-    map.flyTo([midLat, midLng], midZoom, {
-      duration: 0.9,
-      easeLinearity: 0.25,
-    });
-
-    return cleanup;
+    }, step1Duration + 50); // small buffer to ensure step 1 is done
   }, [selectedDeviceId, devices]);
 
   // Handle explicit resizes from parent (sidebar toggle etc)
