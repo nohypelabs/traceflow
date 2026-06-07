@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Crown,
 } from 'lucide-react';
 
 const navItems = [
@@ -27,6 +28,10 @@ const navItems = [
   { href: '/alerts', label: 'Peringatan', icon: Bell },
   { href: '/reports', label: 'Laporan', icon: FileText },
   { href: '/settings', label: 'Pengaturan', icon: Settings },
+];
+
+const superAdminItems = [
+  { href: '/roles', label: 'Kelola Role', icon: Crown },
 ];
 
 interface SidebarProps {
@@ -125,6 +130,46 @@ export function Sidebar({ collapsed = false, onToggle, onClose }: SidebarProps) 
             </Link>
           );
         })}
+
+        {/* Super Admin section */}
+        {session?.user?.role === 'SUPER_ADMIN' && (
+          <>
+            <div className="my-2 border-t border-zinc-200 dark:border-white/[0.06]" />
+            {superAdminItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={cn(
+                    'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                    isActive
+                      ? 'text-yellow-300'
+                      : 'text-yellow-600/70 dark:text-yellow-500/60 hover:text-yellow-600 dark:hover:text-yellow-400',
+                    collapsed && 'justify-center px-2',
+                  )}
+                  title={collapsed ? item.label : undefined}
+                >
+                  {isActive && (
+                    <div className="absolute inset-0 rounded-lg bg-yellow-500/10 border border-yellow-500/20" />
+                  )}
+                  <item.icon className={cn(
+                    'relative z-10 h-4 w-4 shrink-0 transition-colors',
+                    isActive ? 'text-yellow-400' : 'group-hover:text-yellow-500',
+                  )} />
+                  {!collapsed && (
+                    <span className="relative z-10">{item.label}</span>
+                  )}
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 rounded-r-full bg-yellow-400" />
+                  )}
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
 
       {/* Collapse/Expand */}
