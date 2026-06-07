@@ -225,8 +225,10 @@ model Alert {
 // ── Enums ──
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   MANAGER
+  USER
   VIEWER
 }
 

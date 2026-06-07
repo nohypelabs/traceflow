@@ -32,7 +32,7 @@ export const authRouter = createTRPCRouter({
           name: input.name,
           email: input.email,
           password: hashedPassword,
-          role: 'VIEWER',
+          role: 'USER',
         },
         select: {
           id: true,

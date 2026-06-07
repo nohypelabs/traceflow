@@ -3,6 +3,7 @@ export { TRPCError };
 import superjson from 'superjson';
 import type { Session } from 'next-auth';
 import { auth } from '@/lib/auth';
+import { hasMinRole } from '@/lib/roles';
 
 interface CreateContextOptions {
   session: Session | null;
@@ -33,15 +34,25 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   });
 });
 
+// SUPER_ADMIN only (level 100)
+export const superAdminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  if (!hasMinRole(ctx.session.user.role, 'SUPER_ADMIN')) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Super Admin access required' });
+  }
+  return next({ ctx });
+});
+
+// ADMIN or above (level 80+)
 export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  if (ctx.session.user.role !== 'ADMIN') {
+  if (!hasMinRole(ctx.session.user.role, 'ADMIN')) {
     throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
   }
   return next({ ctx });
 });
 
+// MANAGER or above (level 60+)
 export const managerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  if (ctx.session.user.role !== 'ADMIN' && ctx.session.user.role !== 'MANAGER') {
+  if (!hasMinRole(ctx.session.user.role, 'MANAGER')) {
     throw new TRPCError({ code: 'FORBIDDEN', message: 'Manager access required' });
   }
   return next({ ctx });
