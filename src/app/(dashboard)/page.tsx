@@ -473,7 +473,14 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-yellow-400" />
                     <div>
-                      <div className="text-base font-semibold tracking-tight">Peringatan Terbaru</div>
+                      <div className="text-base font-semibold tracking-tight flex items-center gap-2">
+                        Peringatan Terbaru
+                        {(stats?.unreadAlerts ?? 0) > 0 && (
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500/90 px-1.5 text-[10px] font-bold text-white">
+                            {stats?.unreadAlerts}
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[10px] text-zinc-500 -mt-0.5 tracking-[1px]">RECENT EVENTS</div>
                     </div>
                   </div>

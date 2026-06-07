@@ -3,7 +3,9 @@
 import { signOut, useSession } from 'next-auth/react';
 import { Bell, LogOut, User, Wifi, WifiOff, Activity, Menu } from 'lucide-react';
 import { useDeviceRealtime } from '@/hooks/use-device-realtime';
+import { api } from '@/lib/api-provider';
 import { ThemeToggle } from './theme-toggle';
+import Link from 'next/link';
 
 interface HeaderProps {
   onToggleMobile?: () => void;
@@ -12,6 +14,8 @@ interface HeaderProps {
 export function Header({ onToggleMobile }: HeaderProps) {
   const { data: session } = useSession();
   const { isConnected } = useDeviceRealtime();
+  const { data: stats } = api.dashboard.getStats.useQuery();
+  const unreadAlerts = stats?.unreadAlerts ?? 0;
 
   return (
     <header className="relative flex h-14 items-center justify-between border-b border-white/[0.06] dark:border-white/[0.06] border-zinc-200 bg-white/80 dark:bg-zinc-950/60 backdrop-blur-lg px-6">
@@ -64,13 +68,17 @@ export function Header({ onToggleMobile }: HeaderProps) {
         <ThemeToggle />
 
         {/* Notifications */}
-        <button
-          type="button"
+        <Link
+          href="/alerts"
           className="relative rounded-lg p-2 text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition-colors"
         >
           <Bell className="h-4 w-4" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
-        </button>
+          {unreadAlerts > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-[0_0_6px_rgba(239,68,68,0.6)]">
+              {unreadAlerts > 99 ? '99+' : unreadAlerts}
+            </span>
+          )}
+        </Link>
 
         {/* User */}
         <div className="flex items-center gap-2">
