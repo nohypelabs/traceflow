@@ -3,7 +3,12 @@
  * Sends simulated GPS data to the webhook endpoint for testing
  */
 
-const WEBHOOK_URL = 'http://localhost:3000/api/gps-webhook';
+import 'dotenv/config';
+
+const WEBHOOK_URL =
+  process.env['GPS_WEBHOOK_URL'] ??
+  'http://localhost:3000/api/gps-webhook';
+const WEBHOOK_SECRET = process.env['WEBHOOK_SECRET'];
 const DEVICES = [
   { id: 'device-001', name: 'Truck A', imei: '123456789012345' },
   { id: 'device-002', name: 'Car B', imei: '123456789012346' },
@@ -35,24 +40,39 @@ async function sendLocationUpdate(deviceId: string) {
   const location = generateLocation(deviceId);
 
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'x-gps-provider': 'MOCK',
+    };
+
+    if (WEBHOOK_SECRET) {
+      headers['Authorization'] = `Bearer ${WEBHOOK_SECRET}`;
+    }
+
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-gps-provider': 'MOCK',
-      },
+      headers,
       body: JSON.stringify(location),
     });
 
     if (response.ok) {
-      const result = await response.json();
+      const result = (await response.json()) as {
+        processed?: number;
+        skipped?: number;
+      };
       console.log(`[${new Date().toISOString()}] Sent update for ${deviceId}:`, {
         lat: location.lat.toFixed(4),
         lng: location.lng.toFixed(4),
         speed: location.speed.toFixed(1),
+        processed: result.processed,
+        skipped: result.skipped,
       });
     } else {
-      console.error(`Failed to send update for ${deviceId}:`, response.statusText);
+      console.error(
+        `Failed to send update for ${deviceId}:`,
+        response.status,
+        await response.text(),
+      );
     }
   } catch (error) {
     console.error(`Error sending update for ${deviceId}:`, error);
@@ -62,6 +82,7 @@ async function sendLocationUpdate(deviceId: string) {
 async function run() {
   console.log('Starting mock GPS data generator...');
   console.log(`Sending updates to: ${WEBHOOK_URL}`);
+  console.log(`Webhook auth: ${WEBHOOK_SECRET ? 'configured' : 'not configured'}`);
   console.log(`Devices: ${DEVICES.map((d) => d.name).join(', ')}`);
   console.log('');
 

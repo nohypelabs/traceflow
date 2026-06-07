@@ -3,6 +3,16 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { Prisma } from '@/generated/prisma/client';
 
+const integrationModeSchema = z.enum(['TRACKER_WEBHOOK', 'API_PUSH', 'MOCK']);
+
+const providerConfigSchema = z
+  .object({
+    integrationMode: integrationModeSchema,
+    webhookFormat: z.enum(['PROVIDER_NATIVE', 'TRACEFLOW_JSON']),
+    externalDeviceId: z.string().min(3).max(100),
+  })
+  .optional();
+
 /**
  * Verify a device belongs to the user's organization.
  * Throws FORBIDDEN if mismatch or device not found.
@@ -73,14 +83,34 @@ export const deviceRouter = createTRPCRouter({
 
   create: managerProcedure
     .input(
-      z.object({
-        name: z.string().min(1).max(100),
-        imei: z.string().min(1),
-        provider: z.enum(['TELTONIKA', 'QUECLINK', 'CONCOX', 'MOCK']),
-        vehiclePlate: z.string().optional(),
-        vehicleType: z.enum(['CAR', 'TRUCK', 'MOTORCYCLE', 'VAN', 'BUS', 'OTHER']).optional(),
-        providerConfig: z.record(z.string(), z.unknown()).optional(),
-      }),
+      z
+        .object({
+          name: z.string().trim().min(1).max(100),
+          imei: z.string().trim().min(3).max(100),
+          provider: z.enum(['TELTONIKA', 'QUECLINK', 'CONCOX', 'MOCK']),
+          vehiclePlate: z.string().trim().max(30).optional(),
+          vehicleType: z.enum(['CAR', 'TRUCK', 'MOTORCYCLE', 'VAN', 'BUS', 'OTHER']).optional(),
+          providerConfig: providerConfigSchema,
+        })
+        .superRefine((input, ctx) => {
+          const mode = input.providerConfig?.integrationMode ?? 'TRACKER_WEBHOOK';
+
+          if (mode === 'TRACKER_WEBHOOK' && input.provider === 'MOCK') {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['provider'],
+              message: 'Physical tracker must use TELTONIKA, QUECLINK, or CONCOX',
+            });
+          }
+
+          if (mode !== 'TRACKER_WEBHOOK' && input.provider !== 'MOCK') {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['provider'],
+              message: 'TraceFlow JSON and mock integrations must use MOCK provider',
+            });
+          }
+        }),
     )
     .mutation(async ({ input, ctx }) => {
       const orgId = ctx.session.user.organizationId;
@@ -88,15 +118,30 @@ export const deviceRouter = createTRPCRouter({
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'User has no organization' });
       }
 
-      const device = await prisma.device.create({
-        data: {
-          ...input,
-          providerConfig: input.providerConfig as Prisma.InputJsonValue ?? undefined,
-          organizationId: orgId,
-        },
-      });
+      try {
+        const device = await prisma.device.create({
+          data: {
+            ...input,
+            vehiclePlate: input.vehiclePlate || null,
+            providerConfig: input.providerConfig as Prisma.InputJsonValue ?? undefined,
+            organizationId: orgId,
+          },
+        });
 
-      return device;
+        return device;
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError
+          && error.code === 'P2002'
+        ) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'IMEI atau Device ID sudah terdaftar',
+          });
+        }
+
+        throw error;
+      }
     }),
 
   update: managerProcedure

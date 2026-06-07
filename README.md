@@ -180,7 +180,21 @@
 | `DATABASE_URL` | URL koneksi PostgreSQL | - |
 | `NEXTAUTH_SECRET` | Secret key untuk auth | - |
 | `NEXTAUTH_URL` | URL aplikasi | `http://localhost:3000` |
+| `WEBHOOK_SECRET` | Bearer secret untuk semua GPS/API push | wajib di production |
 | `PORT` | Port server | `3000` |
+
+Generate `WEBHOOK_SECRET` sendiri. Secret ini bukan diberikan oleh vendor GPS:
+
+```bash
+openssl rand -hex 32
+```
+
+Simpan hasilnya di `.env` atau environment deployment. Gateway maupun aplikasi
+pengirim harus memakai nilai yang sama pada header:
+
+```http
+Authorization: Bearer <WEBHOOK_SECRET>
+```
 
 ### GPS Providers
 
@@ -192,6 +206,9 @@ TraceFlow mendukung beberapa provider GPS:
 | Teltonika | ✅ | Teltonika FM series |
 | Queclink | ✅ | Queclink GL series |
 | Concox | ✅ | Concox JM series |
+
+Adapter Teltonika, Queclink, dan Concox saat ini menerima HTTP webhook push.
+Raw TCP/UDP listener dan polling API vendor belum diimplementasikan.
 
 ### Webhook Format
 
@@ -239,12 +256,13 @@ Password: admin112233
 
 1. Buka menu **Perangkat**
 2. Klik **Tambah Perangkat**
-3. Isi informasi perangkat:
-   - Nama perangkat
-   - IMEI (unik)
-   - Plat kendaraan (opsional)
-   - Jenis kendaraan
-4. Klik **Buat Perangkat**
+3. Pilih metode integrasi:
+   - **GPS Tracker** untuk payload native Teltonika, Queclink, atau Concox
+   - **API JSON Push** untuk aplikasi/gateway dengan payload standar TraceFlow
+   - **Mock / Testing** untuk simulator lokal
+4. Isi nama, IMEI/Device ID unik, serta data kendaraan
+5. Klik **Simpan Perangkat**
+6. Gunakan request guide yang muncul untuk mengirim lokasi pertama
 
 ### Membuat Geofence
 
@@ -300,7 +318,18 @@ GET /api/trpc/device.list
 
 # Create device
 POST /api/trpc/device.create
-Body: { name, imei, provider, vehiclePlate, vehicleType }
+Body: {
+  name,
+  imei,
+  provider,
+  vehiclePlate,
+  vehicleType,
+  providerConfig: {
+    integrationMode,
+    webhookFormat,
+    externalDeviceId
+  }
+}
 
 # Update device
 POST /api/trpc/device.update
@@ -327,8 +356,22 @@ Body: { deviceId, from, to }
 ```bash
 # Receive GPS data
 POST /api/gps-webhook
-Headers: { x-gps-provider: "TELTONIKA" | "QUECLINK" | "CONCOX" | "MOCK" }
+Headers: {
+  authorization: "Bearer <WEBHOOK_SECRET>",
+  x-gps-provider: "TELTONIKA" | "QUECLINK" | "CONCOX" | "MOCK"
+}
 Body: { ...gps_data }
+```
+
+Payload standar untuk `API JSON Push` menggunakan provider `MOCK`:
+
+```json
+{
+  "deviceId": "fleet-gateway-01",
+  "lat": -6.2088,
+  "lng": 106.8456,
+  "speed": 35
+}
 ```
 
 ---
