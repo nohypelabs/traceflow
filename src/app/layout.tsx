@@ -23,7 +23,6 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
     title: 'TraceFlow',
   },
   formatDetection: {
@@ -32,7 +31,6 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0B1020',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -50,7 +48,6 @@ export default function RootLayout({
         <link rel="icon" href="/icons/icon-192x192.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
