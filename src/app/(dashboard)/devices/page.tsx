@@ -373,7 +373,10 @@ function CreateDeviceForm({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const identifier = form.identifier.trim();
+    const identifier =
+      method === 'PHONE_GPS'
+        ? `phone-${crypto.randomUUID()}`
+        : form.identifier.trim();
 
     onCreate({
       name: form.name.trim(),
@@ -392,9 +395,7 @@ function CreateDeviceForm({
   const identifierLabel =
     method === 'TRACKER_WEBHOOK'
       ? 'IMEI / DEVICE ID'
-      : method === 'PHONE_GPS'
-        ? 'DEVICE ID HP'
-        : 'API DEVICE ID';
+      : 'API DEVICE ID';
 
   return (
     <SlideUp>
@@ -449,24 +450,34 @@ function CreateDeviceForm({
               />
             </Field>
 
-            <Field label={identifierLabel}>
-              <input
-                type="text"
-                value={form.identifier}
-                onChange={(event) => setForm({ ...form, identifier: event.target.value })}
-                className={`${inputClass} font-mono`}
-                placeholder={
-                  method === 'TRACKER_WEBHOOK'
-                    ? '123456789012345'
-                    : method === 'PHONE_GPS'
-                      ? 'phone-tracker-01'
+            {method === 'PHONE_GPS' ? (
+              <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.06] p-4">
+                <div className="text-xs font-medium tracking-wider text-cyan-200">
+                  GPS HP DIDETEKSI OTOMATIS
+                </div>
+                <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">
+                  Tidak perlu IMEI atau Device ID. TraceFlow membuat ID internal,
+                  lalu membaca koordinat dari sensor lokasi browser setelah izin diberikan.
+                </p>
+              </div>
+            ) : (
+              <Field label={identifierLabel}>
+                <input
+                  type="text"
+                  value={form.identifier}
+                  onChange={(event) => setForm({ ...form, identifier: event.target.value })}
+                  className={`${inputClass} font-mono`}
+                  placeholder={
+                    method === 'TRACKER_WEBHOOK'
+                      ? '123456789012345'
                       : 'fleet-gateway-01'
-                }
-                required
-                minLength={3}
-                maxLength={100}
-              />
-            </Field>
+                  }
+                  required
+                  minLength={3}
+                  maxLength={100}
+                />
+              </Field>
+            )}
 
             {method === 'TRACKER_WEBHOOK' && (
               <Field label="PROVIDER / FORMAT PAYLOAD">

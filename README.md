@@ -261,13 +261,14 @@ Password: admin112233
    - **API JSON Push** untuk aplikasi/gateway dengan payload standar TraceFlow
    - **GPS HP** untuk memakai browser smartphone sebagai tracker sementara
    - **Mock / Testing** untuk simulator lokal
-4. Isi nama, IMEI/Device ID unik, serta data kendaraan
+4. Isi nama dan data kendaraan. Untuk tracker/API, isi juga IMEI/Device ID unik;
+   metode GPS HP membuat ID internal secara otomatis
 5. Klik **Simpan Perangkat**
 6. Gunakan request guide yang muncul untuk mengirim lokasi pertama
 
 ### Testing dengan GPS HP
 
-1. Tambahkan perangkat menggunakan metode **GPS HP**
+1. Tambahkan perangkat menggunakan metode **GPS HP** tanpa mengisi IMEI/Device ID
 2. Buka `/phone-tracker` dari deployment HTTPS melalui HP
 3. Login, pilih device, lalu tekan **Mulai Tracking**
 4. Izinkan lokasi presisi dan biarkan halaman tetap terbuka
