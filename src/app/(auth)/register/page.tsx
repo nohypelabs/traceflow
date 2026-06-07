@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
+import { api } from '@/lib/api-provider';
 import { 
   UserPlus, Eye, EyeOff, Loader2, AlertTriangle, Shield, 
   Check, X 
@@ -17,6 +18,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const registerMutation = api.auth.register.useMutation();
 
   // Simple password strength (visual only)
   const passwordStrength = (() => {
@@ -38,20 +41,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // Register via tRPC (raw fetch — matches current implementation)
-      const res = await fetch('/api/trpc/auth.register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          0: { json: { name, email, password } },
-        }),
-      });
+      // Register via tRPC
+      await registerMutation.mutateAsync({ name, email, password });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data[0]?.error?.message ?? 'Registration failed');
-      }
-
+      // Auto-login after successful registration
       const result = await signIn('credentials', {
         email,
         password,
@@ -64,8 +57,9 @@ export default function RegisterPage() {
       } else {
         router.push('/');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registrasi gagal');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Registrasi gagal';
+      setError(message);
     } finally {
       setLoading(false);
     }
