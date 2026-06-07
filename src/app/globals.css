@@ -534,3 +534,14 @@ table tbody tr:hover {
 button:hover:not(:disabled) {
   transition: all 0.15s;
 }
+
+/* Pointer cursor for all clickable elements */
+button,
+a,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+select,
+.clickable {
+  cursor: pointer;
+}
