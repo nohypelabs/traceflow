@@ -31,7 +31,13 @@ export const geofenceRouter = createTRPCRouter({
     return prisma.geofence.findMany({
       where: orgId ? { organizationId: orgId } : undefined,
       include: {
-        _count: { select: { geofenceDevices: true } },
+        geofenceDevices: {
+          include: {
+            device: {
+              select: { id: true, name: true, vehiclePlate: true, status: true },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -59,6 +65,7 @@ export const geofenceRouter = createTRPCRouter({
         radius: z.number().optional(),
         polygon: z.array(z.array(z.number())).optional(),
         color: z.string().optional(),
+        deviceIds: z.array(z.string()).optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -67,12 +74,25 @@ export const geofenceRouter = createTRPCRouter({
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'User has no organization' });
       }
 
-      return prisma.geofence.create({
+      const { deviceIds, ...data } = input;
+
+      const geofence = await prisma.geofence.create({
         data: {
-          ...input,
+          ...data,
           organizationId: orgId,
         },
       });
+
+      if (deviceIds && deviceIds.length > 0) {
+        await prisma.geofenceDevice.createMany({
+          data: deviceIds.map((deviceId) => ({
+            geofenceId: geofence.id,
+            deviceId,
+          })),
+        });
+      }
+
+      return geofence;
     }),
 
   update: managerProcedure
