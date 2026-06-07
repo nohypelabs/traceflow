@@ -8,6 +8,7 @@ import { alertRouter } from '@/server/api/routers/alert';
 import { dashboardRouter } from '@/server/api/routers/dashboard';
 import { organizationRouter } from '@/server/api/routers/organization';
 import { roleRouter } from '@/server/api/routers/role';
+import { profileRouter } from '@/server/api/routers/profile';
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
   dashboard: dashboardRouter,
   organization: organizationRouter,
   role: roleRouter,
+  profile: profileRouter,
 });
 
 export type AppRouter = typeof appRouter;

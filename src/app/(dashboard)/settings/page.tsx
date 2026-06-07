@@ -8,6 +8,8 @@ import { PageWrapper, CyberCard } from '@/components/ui/page-wrapper';
 import { Button } from '@/components/ui/button';
 import { WhatsAppSettings } from '@/components/ui/whatsapp-settings';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { ProfilePhoto } from '@/components/ui/profile-photo';
+import { ROLE_HIERARCHY } from '@/lib/roles';
 
 type Tab = 'profile' | 'organization' | 'whatsapp' | 'language';
 
@@ -51,60 +53,158 @@ export default function SettingsPage() {
 
 function ProfileSettings() {
   const utils = api.useUtils();
-  // Demo mock current user data (realistic, matches real User type)
-  const mockSession = {
-    user: {
-      name: 'Budi Santoso',
-      email: 'budi.santoso@perusahaan.com',
-      role: 'MANAGER',
+  const { data: profile, isLoading: profileLoading } = api.profile.getProfile.useQuery();
+
+  const [form, setForm] = useState({ name: '' });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // Sync form with profile data
+  useEffect(() => {
+    if (profile) {
+      setForm({ name: profile.name ?? '' });
     }
-  };
+  }, [profile]);
 
-  const [form, setForm] = useState({ name: 'Budi Santoso', email: 'budi.santoso@perusahaan.com', currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [error, setError] = useState(''); const [success, setSuccess] = useState('');
-
-  const updateProfileMutation = api.auth.updateProfile.useMutation({
-    onSuccess: () => { setSuccess('Profil berhasil diperbarui'); setError(''); utils.auth.getSession.invalidate(); },
-    onError: (e) => { setError(e.message); setSuccess(''); },
+  const updateProfileMutation = api.profile.updateProfile.useMutation({
+    onSuccess: () => {
+      setSuccess('Profil berhasil diperbarui');
+      setError('');
+      utils.profile.getProfile.invalidate();
+    },
+    onError: (e) => {
+      setError(e.message);
+      setSuccess('');
+    },
   });
 
   const changePasswordMutation = api.auth.changePassword.useMutation({
-    onSuccess: () => { setSuccess('Kata sandi berhasil diubah'); setError(''); setForm((p) => ({ ...p, currentPassword: '', newPassword: '', confirmPassword: '' })); },
-    onError: (e) => { setError(e.message); setSuccess(''); },
+    onSuccess: () => {
+      setSuccess('Kata sandi berhasil diubah');
+      setError('');
+      setForm((p) => ({ ...p, currentPassword: '', newPassword: '', confirmPassword: '' }));
+    },
+    onError: (e) => {
+      setError(e.message);
+      setSuccess('');
+    },
   });
+
+  const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+
+  if (profileLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 text-cyan-400 animate-spin" />
+      </div>
+    );
+  }
+
+  const roleLabel: Record<string, string> = {
+    SUPER_ADMIN: 'Super Admin',
+    ADMIN: 'Admin',
+    MANAGER: 'Manager',
+    USER: 'User',
+    VIEWER: 'Viewer',
+  };
 
   return (
     <div className="space-y-4">
+      {/* Profile Card with Photo */}
       <CyberCard className="p-6">
-        <div className="mb-5 text-lg font-semibold tracking-tight">Informasi Profil</div>
-        <form onSubmit={(e) => { e.preventDefault(); updateProfileMutation.mutate({ name: form.name, email: form.email }); }} className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div><label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">NAMA</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm" /></div>
-            <div><label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">EMAIL</label><input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm" /></div>
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Photo */}
+          <div className="flex-shrink-0">
+            <ProfilePhoto
+              currentUrl={profile?.image}
+              userName={profile?.name}
+              onUploaded={() => utils.profile.getProfile.invalidate()}
+              onDeleted={() => utils.profile.getProfile.invalidate()}
+            />
           </div>
-          <div className="flex justify-end"><Button type="submit" disabled={updateProfileMutation.isPending}>{updateProfileMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Simpan Perubahan</Button></div>
-        </form>
+
+          {/* Info */}
+          <div className="flex-1 space-y-4">
+            <div>
+              <div className="text-lg font-semibold tracking-tight">{profile?.name ?? 'Tanpa Nama'}</div>
+              <div className="text-sm text-zinc-500 font-mono">{profile?.email}</div>
+              <div className="mt-1 flex items-center gap-2">
+                <span className="rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 text-[10px] font-medium text-cyan-400 uppercase tracking-wider">
+                  {roleLabel[profile?.role ?? ''] ?? profile?.role}
+                </span>
+                <span className="text-[10px] text-zinc-400">
+                  Level {ROLE_HIERARCHY[profile?.role ?? ''] ?? 0}
+                </span>
+              </div>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); updateProfileMutation.mutate({ name: form.name }); }} className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">NAMA</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="futuristic-input w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white"
+                  minLength={2}
+                  required
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">EMAIL</label>
+                <input
+                  type="email"
+                  value={profile?.email ?? ''}
+                  disabled
+                  className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900/40 px-4 py-2.5 text-sm text-zinc-500 cursor-not-allowed"
+                />
+                <p className="mt-1 text-[10px] text-zinc-400">Email tidak bisa diubah</p>
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={updateProfileMutation.isPending}>
+                  {updateProfileMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  Simpan Perubahan
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
       </CyberCard>
 
+      {/* Password Card */}
       <CyberCard className="p-6">
         <div className="mb-5 text-lg font-semibold tracking-tight">Ubah Kata Sandi</div>
         <form onSubmit={(e) => {
           e.preventDefault(); setError('');
-          if (form.newPassword !== form.confirmPassword) { setError('Kata sandi baru tidak cocok'); return; }
-          if (form.newPassword.length < 8) { setError('Minimal 8 karakter'); return; }
-          changePasswordMutation.mutate({ currentPassword: form.currentPassword, newPassword: form.newPassword });
+          if (passwords.newPassword !== passwords.confirmPassword) { setError('Kata sandi baru tidak cocok'); return; }
+          if (passwords.newPassword.length < 8) { setError('Minimal 8 karakter'); return; }
+          changePasswordMutation.mutate({ currentPassword: passwords.currentPassword, newPassword: passwords.newPassword });
         }} className="space-y-4">
-          <div><label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">KATA SANDI SAAT INI</label><input type="password" value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm" required /></div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div><label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">KATA SANDI BARU</label><input type="password" value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm" minLength={8} required /></div>
-            <div><label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">KONFIRMASI</label><input type="password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm" minLength={8} required /></div>
+          <div>
+            <label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">KATA SANDI SAAT INI</label>
+            <input type="password" value={passwords.currentPassword} onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })} className="futuristic-input w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white" required />
           </div>
-          <div className="flex justify-end"><Button type="submit" disabled={changePasswordMutation.isPending}>{changePasswordMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Ubah Kata Sandi</Button></div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">KATA SANDI BARU</label>
+              <input type="password" value={passwords.newPassword} onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })} className="futuristic-input w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white" minLength={8} required />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">KONFIRMASI</label>
+              <input type="password" value={passwords.confirmPassword} onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })} className="futuristic-input w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950/60 px-4 py-2.5 text-sm text-zinc-900 dark:text-white" minLength={8} required />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={changePasswordMutation.isPending}>
+              {changePasswordMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Ubah Kata Sandi
+            </Button>
+          </div>
         </form>
       </CyberCard>
 
-      {error && <CyberCard className="border-red-500/30 bg-red-950/30 p-4 text-red-300">{error}</CyberCard>}
-      {success && <CyberCard className="border-emerald-500/30 bg-emerald-950/30 p-4 text-emerald-300">{success}</CyberCard>}
+      {error && <CyberCard className="border-red-500/30 bg-red-950/30 dark:bg-red-950/30 bg-red-50 p-4 text-red-600 dark:text-red-300">{error}</CyberCard>}
+      {success && <CyberCard className="border-emerald-500/30 bg-emerald-950/30 dark:bg-emerald-950/30 bg-emerald-50 p-4 text-emerald-600 dark:text-emerald-300">{success}</CyberCard>}
     </div>
   );
 }

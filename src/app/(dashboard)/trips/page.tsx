@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api-provider';
-import { Play, Clock, MapPin, Gauge, RotateCcw, Download } from 'lucide-react';
+import { Play, Clock, MapPin, Gauge, RotateCcw, Download, Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from '@/components/ui/animation';
 import { PageWrapper, CyberCard, NeonButton } from '@/components/ui/page-wrapper';
 import { Button } from '@/components/ui/button';
-import type { TripWithDevice } from '@/types';
 import { exportTripsToCSV } from '@/lib/export';
 
 const TripPlaybackMap = dynamic(() => import('@/components/map/trip-playback'), {
@@ -15,42 +14,50 @@ const TripPlaybackMap = dynamic(() => import('@/components/map/trip-playback'), 
   loading: () => <div className="flex h-full items-center justify-center text-zinc-500">Memuat peta playback...</div>,
 });
 
+type TripItem = {
+  id: string;
+  distance: number | null;
+  duration: number | null;
+  maxSpeed: number | null;
+  averageSpeed: number | null;
+  startedAt: Date;
+  endedAt: Date | null;
+  startAddress: string | null;
+  endAddress: string | null;
+  device: { name: string; vehiclePlate: string | null };
+};
+
 export default function TripsPage() {
-  // Rich realistic trip mocks (match TripWithDevice type)
-  const mockTrips: any[] = [
-    { id: 't1', device: { name: 'Truk Armada-07', vehiclePlate: 'B 1234 ABC' }, distance: 187400, duration: 14280, maxSpeed: 82, averageSpeed: 47, startedAt: new Date(Date.now() - 1000*60*60*26), startAddress: 'Gudang Utara, Jakarta' },
-    { id: 't2', device: { name: 'Mobil Ops #12', vehiclePlate: 'B 5678 DEF' }, distance: 94500, duration: 7320, maxSpeed: 91, averageSpeed: 46, startedAt: new Date(Date.now() - 1000*60*60*19), startAddress: 'Kantor Pusat' },
-    { id: 't3', device: { name: 'Motor Kurir-03', vehiclePlate: 'B 9012 GHI' }, distance: 42300, duration: 3180, maxSpeed: 68, averageSpeed: 48, startedAt: new Date(Date.now() - 1000*60*60*11), startAddress: 'Depot BSD' },
-    { id: 't4', device: { name: 'Van Logistik-09', vehiclePlate: 'B 3456 JKL' }, distance: 156800, duration: 12420, maxSpeed: 75, averageSpeed: 45, startedAt: new Date(Date.now() - 1000*60*60*31), startAddress: 'Pool Maintenance' },
-    { id: 't5', device: { name: 'Truk C-22', vehiclePlate: 'B 6789 STU' }, distance: 67200, duration: 5400, maxSpeed: 64, averageSpeed: 45, startedAt: new Date(Date.now() - 1000*60*60*8), startAddress: 'Client Site BSD' },
-    { id: 't6', device: { name: 'Ambulance Support', vehiclePlate: 'B 1122 VWX' }, distance: 234500, duration: 16980, maxSpeed: 88, averageSpeed: 50, startedAt: new Date(Date.now() - 1000*60*60*38), startAddress: 'RS Harapan' },
-  ];
-
-  const mockDevices = [
-    { id: 'd1', name: 'Truk Armada-07' },
-    { id: 'd2', name: 'Mobil Ops #12' },
-    { id: 'd3', name: 'Motor Kurir-03' },
-    { id: 'd4', name: 'Van Logistik-09' },
-    { id: 'd6', name: 'Ambulance Support' },
-  ];
-
-  const [selectedDevice, setSelectedDevice] = useState<string>('');
-  const [selectedTrip, setSelectedTrip] = useState<any | null>(null);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+  const [selectedTrip, setSelectedTrip] = useState<TripItem | null>(null);
   const [dateRange, setDateRange] = useState({
     from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     to: new Date().toISOString().split('T')[0],
   });
 
-  const filteredTrips = selectedDevice 
-    ? mockTrips.filter(t => t.device.name.includes(mockDevices.find(d => d.id === selectedDevice)?.name || ''))
-    : mockTrips;
+  const devicesQuery = api.device.list.useQuery();
+  const devices = devicesQuery.data ?? [];
+
+  const tripsQuery = api.trip.list.useQuery({
+    deviceId: selectedDeviceId || undefined,
+    from: new Date(dateRange.from),
+    to: new Date(dateRange.to + 'T23:59:59'),
+    limit: 50,
+  });
+
+  const trips: TripItem[] = (tripsQuery.data ?? []) as TripItem[];
+
+  const handleExport = () => {
+    if (trips.length === 0) return;
+    exportTripsToCSV(trips);
+  };
 
   const actions = (
     <Button
       variant="outline"
       size="default"
-      onClick={() => exportTripsToCSV(filteredTrips)}
-      disabled={filteredTrips.length === 0}
+      onClick={handleExport}
+      disabled={trips.length === 0}
       className="border-white/15 bg-white/5"
     >
       <Download className="h-4 w-4 md:mr-2" />
@@ -66,21 +73,33 @@ export default function TripsPage() {
           <div>
             <label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">PERANGKAT</label>
             <select
-              value={selectedDevice}
-              onChange={(e) => { setSelectedDevice(e.target.value); setSelectedTrip(null); }}
-              className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm"
+              value={selectedDeviceId}
+              onChange={(e) => { setSelectedDeviceId(e.target.value); setSelectedTrip(null); }}
+              className="w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm focus:border-cyan-500/40 focus:outline-none transition"
             >
-              <option value="">Semua Perangkat (Demo)</option>
-              {mockDevices.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+              <option value="">Semua Perangkat</option>
+              {devices.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
             </select>
           </div>
           <div>
             <label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">DARI</label>
-            <input type="date" value={dateRange.from} onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm" />
+            <input
+              type="date"
+              value={dateRange.from}
+              onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
+              className="w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm focus:border-cyan-500/40 focus:outline-none transition"
+            />
           </div>
           <div>
             <label className="mb-1.5 block text-[10px] tracking-[1.5px] text-zinc-400">SAMPAI</label>
-            <input type="date" value={dateRange.to} onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })} className="futuristic-input w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm" />
+            <input
+              type="date"
+              value={dateRange.to}
+              onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
+              className="w-full rounded-xl border border-white/10 bg-zinc-950/60 px-4 py-2.5 text-sm focus:border-cyan-500/40 focus:outline-none transition"
+            />
           </div>
         </div>
       </CyberCard>
@@ -89,14 +108,27 @@ export default function TripsPage() {
         {/* Trip List */}
         <SlideUp delay={0.1}>
           <CyberCard>
-            <div className="border-b border-white/10 p-4 text-sm font-medium tracking-wider text-zinc-400">PERJALANAN (Demo - 6 Trip Terbaru)</div>
+            <div className="border-b border-white/10 p-4 text-sm font-medium tracking-wider text-zinc-400">
+              PERJALANAN
+              {!tripsQuery.isLoading && (
+                <span className="ml-2 text-xs text-zinc-600">({trips.length} trip)</span>
+              )}
+            </div>
             <div className="max-h-[58vh] overflow-y-auto">
-              {filteredTrips.length > 0 ? (
+              {tripsQuery.isLoading ? (
+                <div className="flex h-64 items-center justify-center">
+                  <Loader2 className="h-6 w-6 text-zinc-500 animate-spin" />
+                </div>
+              ) : trips.length > 0 ? (
                 <div className="divide-y divide-white/5">
                   <StaggerContainer>
-                    {filteredTrips.slice(0, 6).map((trip) => (
+                    {trips.map((trip) => (
                       <StaggerItem key={trip.id}>
-                        <TripRow trip={trip} isSelected={selectedTrip?.id === trip.id} onClick={() => setSelectedTrip(trip)} />
+                        <TripRow
+                          trip={trip}
+                          isSelected={selectedTrip?.id === trip.id}
+                          onClick={() => setSelectedTrip(trip)}
+                        />
                       </StaggerItem>
                     ))}
                   </StaggerContainer>
@@ -104,7 +136,9 @@ export default function TripsPage() {
               ) : (
                 <div className="flex h-64 flex-col items-center justify-center text-center text-zinc-500">
                   <Clock className="mb-2 h-8 w-8" />
-                  Pilih perangkat untuk melihat riwayat
+                  <div className="text-sm">
+                    {selectedDeviceId ? 'Tidak ada perjalanan untuk perangkat ini' : 'Belum ada perjalanan tercatat'}
+                  </div>
                 </div>
               )}
             </div>
@@ -130,25 +164,25 @@ export default function TripsPage() {
   );
 }
 
-function TripRow({ trip, isSelected, onClick }: any) {
+function TripRow({ trip, isSelected, onClick }: { trip: TripItem; isSelected: boolean; onClick: () => void }) {
   return (
     <div onClick={onClick} className={`cursor-pointer p-4 transition hover:bg-white/5 ${isSelected ? 'bg-cyan-500/10' : ''}`}>
       <div className="flex items-center justify-between">
         <div>
           <div className="font-medium">{trip.device?.name ?? 'Perangkat'}</div>
-          <div className="text-xs text-zinc-400 dark:text-zinc-500">{new Date(trip.startedAt).toLocaleString('id-ID')}</div>
+          <div className="text-xs text-zinc-400">{new Date(trip.startedAt).toLocaleString('id-ID')}</div>
         </div>
         <div className="text-right text-sm">
           <div className="font-medium tabular-nums">{trip.distance ? `${(trip.distance / 1000).toFixed(1)} km` : '—'}</div>
-          <div className="text-xs text-zinc-400 dark:text-zinc-500">{trip.duration ? `${Math.round(trip.duration / 60)} mnt` : '—'}</div>
+          <div className="text-xs text-zinc-400">{trip.duration ? `${Math.round(trip.duration / 60)} mnt` : '—'}</div>
         </div>
       </div>
-      {trip.startAddress && <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-500 line-clamp-1">{trip.startAddress}</div>}
+      {trip.startAddress && <div className="mt-1 text-xs text-zinc-500 line-clamp-1">{trip.startAddress}</div>}
     </div>
   );
 }
 
-function TripPlayback({ trip }: { trip: any }) {
+function TripPlayback({ trip }: { trip: TripItem }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -171,25 +205,25 @@ function TripPlayback({ trip }: { trip: any }) {
         <div><div className="font-mono text-xl font-semibold text-cyan-400">{stats.avgSpeed}</div><div className="text-zinc-500">rata² km/j</div></div>
       </div>
 
-      {/* Playback controls bar - better placement right under stats */}
+      {/* Playback controls */}
       <div className="border-b border-white/10 bg-zinc-950/50 px-4 py-3">
         <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setIsPlaying(!isPlaying)} 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsPlaying(!isPlaying)}
             className="border-white/10 flex-shrink-0 h-8 w-8 p-0 flex items-center justify-center"
           >
             {isPlaying ? <RotateCcw className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
           <div className="flex-1 flex items-center gap-2">
-            <input 
-              type="range" 
-              min="0" 
-              max="100" 
-              value={progress} 
-              onChange={(e) => setProgress(parseInt(e.target.value))} 
-              className="flex-1 accent-cyan-400" 
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={progress}
+              onChange={(e) => setProgress(parseInt(e.target.value))}
+              className="flex-1 accent-cyan-400"
             />
             <span className="w-12 text-right text-xs tabular-nums text-zinc-400 font-mono">{progress}%</span>
           </div>

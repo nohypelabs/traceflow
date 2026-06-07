@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { api } from '@/lib/api-provider';
-import { Bell, BellOff, Check, Trash2, Filter, AlertTriangle, AlertCircle, Info, Download } from 'lucide-react';
-import { useSocket } from '@/hooks/use-socket';
+import { Bell, BellOff, Check, Trash2, Filter, AlertTriangle, AlertCircle, Info, Download, Loader2 } from 'lucide-react';
 import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from '@/components/ui/animation';
 import { PageWrapper, CyberCard, NeonButton } from '@/components/ui/page-wrapper';
 import { Button } from '@/components/ui/button';
-import type { AlertWithDevice } from '@/types';
 import { exportAlertsToCSV } from '@/lib/export';
 
 const severityAccent: Record<string, string> = {
@@ -16,46 +14,105 @@ const severityAccent: Record<string, string> = {
   INFO: 'border-cyan-500/50 bg-cyan-500/10',
 };
 
-export default function AlertsPage() {
-  // Rich, realistic mock alerts (matches AlertWithDevice type perfectly — ready for real API swap)
-  const [mockAlerts, setMockAlerts] = useState<AlertWithDevice[]>([
-    { id: 'al1', deviceId: 'd1', geofenceId: 'g1', type: 'GEOFENCE_ENTER', severity: 'INFO', message: 'Memasuki geofence Gudang Utara', latitude: -6.2088, longitude: 106.8456, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*2), device: { name: 'Truk Armada-07', vehiclePlate: 'B 1234 ABC' }, geofence: { name: 'Gudang Utara' } },
-    { id: 'al2', deviceId: 'd2', geofenceId: null, type: 'SPEEDING', severity: 'WARNING', message: 'Kecepatan melebihi batas 80 km/h', latitude: -6.175, longitude: 106.865, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*7), device: { name: 'Mobil Ops #12', vehiclePlate: 'B 5678 DEF' }, geofence: null },
-    { id: 'al3', deviceId: 'd3', geofenceId: 'g2', type: 'GEOFENCE_EXIT', severity: 'INFO', message: 'Keluar dari geofence Rute A - Tol', latitude: -6.22, longitude: 106.81, isRead: true, triggeredAt: new Date(Date.now() - 1000*60*14), device: { name: 'Motor Kurir-03', vehiclePlate: 'B 9012 GHI' }, geofence: { name: 'Rute A - Tol' } },
-    { id: 'al4', deviceId: 'd4', geofenceId: null, type: 'SOS', severity: 'CRITICAL', message: 'SOS button ditekan - butuh bantuan', latitude: -6.19, longitude: 106.83, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*19), device: { name: 'Van Logistik-09', vehiclePlate: 'B 3456 JKL' }, geofence: null },
-    { id: 'al5', deviceId: 'd6', geofenceId: 'g4', type: 'GEOFENCE_ENTER', severity: 'INFO', message: 'Memasuki geofence Pool Maintenance', latitude: -6.205, longitude: 106.85, isRead: true, triggeredAt: new Date(Date.now() - 1000*60*28), device: { name: 'Ambulance Support', vehiclePlate: 'B 1122 VWX' }, geofence: { name: 'Pool Maintenance' } },
-    { id: 'al6', deviceId: 'd2', geofenceId: null, type: 'SPEEDING', severity: 'WARNING', message: 'Kecepatan melebihi batas 80 km/h', latitude: -6.18, longitude: 106.87, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*35), device: { name: 'Mobil Ops #12', vehiclePlate: 'B 5678 DEF' }, geofence: null },
-    { id: 'al7', deviceId: 'd8', geofenceId: 'g3', type: 'GEOFENCE_EXIT', severity: 'INFO', message: 'Keluar Area JKT Selatan', latitude: -6.25, longitude: 106.81, isRead: true, triggeredAt: new Date(Date.now() - 1000*60*42), device: { name: 'Bus Sekolah-03', vehiclePlate: 'B 4455 YZ' }, geofence: { name: 'Area JKT Selatan' } },
-    { id: 'al8', deviceId: 'd12', geofenceId: 'g6', type: 'GEOFENCE_ENTER', severity: 'INFO', message: 'Memasuki Depot Bahan Bakar', latitude: -6.195, longitude: 106.81, isRead: false, triggeredAt: new Date(Date.now() - 1000*60*51), device: { name: 'Truk Tanker-11', vehiclePlate: 'B 9900 BB' }, geofence: { name: 'Depot Bahan Bakar' } },
-  ]);
+type AlertItem = {
+  id: string;
+  type: string;
+  severity: string;
+  message: string;
+  latitude: number | null;
+  longitude: number | null;
+  isRead: boolean;
+  triggeredAt: Date;
+  device: { name: string; vehiclePlate: string | null };
+  geofence: { name: string } | null;
+};
 
+export default function AlertsPage() {
   const [filter, setFilter] = useState<string>('all');
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
 
-  const filteredAlerts = mockAlerts.filter((alert) => {
-    if (filter !== 'all' && alert.type !== filter) return false;
-    if (showUnreadOnly && alert.isRead) return false;
-    return true;
+  const utils = api.useUtils();
+
+  // Build query input
+  const alertType = filter !== 'all' ? (filter as 'SPEEDING' | 'GEOFENCE_ENTER' | 'GEOFENCE_EXIT' | 'SOS' | 'IGNITION_ON' | 'IGNITION_OFF' | 'LOW_BATTERY' | 'DEVICE_OFFLINE' | 'IDLE_TOO_LONG') : undefined;
+  const queryInput = {
+    limit: 50,
+    ...(alertType ? { type: alertType } : {}),
+    ...(showUnreadOnly ? { isRead: false } : {}),
+    ...(cursor ? { cursor } : {}),
+  };
+  if (showUnreadOnly) queryInput.isRead = false;
+  if (cursor) queryInput.cursor = cursor;
+
+  const alertsQuery = api.alert.list.useQuery(queryInput);
+  const unreadCountQuery = api.alert.getUnreadCount.useQuery();
+
+  const markReadMutation = api.alert.markRead.useMutation({
+    onSuccess: () => {
+      utils.alert.list.invalidate();
+      utils.alert.getUnreadCount.invalidate();
+    },
   });
 
-  const unreadCount = mockAlerts.filter((a) => !a.isRead).length;
+  const markAllReadMutation = api.alert.markAllRead.useMutation({
+    onSuccess: () => {
+      utils.alert.list.invalidate();
+      utils.alert.getUnreadCount.invalidate();
+    },
+  });
+
+  const deleteMutation = api.alert.delete.useMutation({
+    onSuccess: () => {
+      utils.alert.list.invalidate();
+      utils.alert.getUnreadCount.invalidate();
+    },
+  });
+
+  const alerts: AlertItem[] = (alertsQuery.data?.items ?? []) as AlertItem[];
+  const unreadCount = unreadCountQuery.data ?? 0;
+
+  const handleMarkRead = useCallback((id: string) => {
+    markReadMutation.mutate({ id });
+  }, [markReadMutation]);
+
+  const handleDelete = useCallback((id: string) => {
+    deleteMutation.mutate({ id });
+  }, [deleteMutation]);
+
+  const handleExport = () => {
+    if (alerts.length === 0) return;
+    exportAlertsToCSV(alerts);
+  };
 
   const actions = (
     <div className="flex gap-2">
       <Button
         variant="outline"
         size="sm"
-        onClick={() => exportAlertsToCSV(filteredAlerts)}
-        disabled={filteredAlerts.length === 0}
+        onClick={handleExport}
+        disabled={alerts.length === 0}
         className="border-white/15 bg-white/5"
       >
         <Download className="h-4 w-4 md:mr-2" />
         <span className="hidden md:inline">Export CSV</span>
       </Button>
+      {unreadCount > 0 && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => markAllReadMutation.mutate()}
+          disabled={markAllReadMutation.isPending}
+          className="border-white/15 bg-white/5"
+        >
+          <Check className="h-4 w-4 md:mr-2" />
+          <span className="hidden md:inline">Baca Semua</span>
+        </Button>
+      )}
       <Button
         variant={showUnreadOnly ? 'default' : 'outline'}
         size="sm"
-        onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+        onClick={() => { setShowUnreadOnly(!showUnreadOnly); setCursor(undefined); }}
         className="border-white/15"
       >
         {showUnreadOnly ? <Bell className="mr-2 h-4 w-4" /> : <BellOff className="mr-2 h-4 w-4" />}
@@ -63,14 +120,6 @@ export default function AlertsPage() {
       </Button>
     </div>
   );
-
-  const markRead = (id: string) => {
-    setMockAlerts(prev => prev.map(a => a.id === id ? { ...a, isRead: true } : a));
-  };
-
-  const deleteAlert = (id: string) => {
-    setMockAlerts(prev => prev.filter(a => a.id !== id));
-  };
 
   return (
     <PageWrapper
@@ -81,30 +130,86 @@ export default function AlertsPage() {
       {/* Filters */}
       <CyberCard className="p-4">
         <div className="flex flex-wrap gap-2">
-          <FilterButton active={filter === 'all'} onClick={() => setFilter('all')} icon={<Filter className="h-4 w-4" />}>Semua</FilterButton>
-          <FilterButton active={filter === 'SPEEDING'} onClick={() => setFilter('SPEEDING')} icon={<AlertTriangle className="h-4 w-4 text-orange-400" />}>Kecepatan</FilterButton>
-          <FilterButton active={filter === 'GEOFENCE_ENTER'} onClick={() => setFilter('GEOFENCE_ENTER')} icon={<AlertCircle className="h-4 w-4 text-blue-400" />}>Masuk Geofence</FilterButton>
-          <FilterButton active={filter === 'GEOFENCE_EXIT'} onClick={() => setFilter('GEOFENCE_EXIT')} icon={<AlertCircle className="h-4 w-4 text-purple-400" />}>Keluar Geofence</FilterButton>
-          <FilterButton active={filter === 'SOS'} onClick={() => setFilter('SOS')} icon={<AlertTriangle className="h-4 w-4 text-red-400" />}>SOS</FilterButton>
+          <FilterButton
+            active={filter === 'all'}
+            onClick={() => { setFilter('all'); setCursor(undefined); }}
+            icon={<Filter className="h-4 w-4" />}
+          >
+            Semua
+          </FilterButton>
+          <FilterButton
+            active={filter === 'SPEEDING'}
+            onClick={() => { setFilter('SPEEDING'); setCursor(undefined); }}
+            icon={<AlertTriangle className="h-4 w-4 text-orange-400" />}
+          >
+            Kecepatan
+          </FilterButton>
+          <FilterButton
+            active={filter === 'GEOFENCE_ENTER'}
+            onClick={() => { setFilter('GEOFENCE_ENTER'); setCursor(undefined); }}
+            icon={<AlertCircle className="h-4 w-4 text-blue-400" />}
+          >
+            Masuk Geofence
+          </FilterButton>
+          <FilterButton
+            active={filter === 'GEOFENCE_EXIT'}
+            onClick={() => { setFilter('GEOFENCE_EXIT'); setCursor(undefined); }}
+            icon={<AlertCircle className="h-4 w-4 text-purple-400" />}
+          >
+            Keluar Geofence
+          </FilterButton>
+          <FilterButton
+            active={filter === 'SOS'}
+            onClick={() => { setFilter('SOS'); setCursor(undefined); }}
+            icon={<AlertTriangle className="h-4 w-4 text-red-400" />}
+          >
+            SOS
+          </FilterButton>
         </div>
       </CyberCard>
 
-      {/* Alerts List - rich demo mocks */}
+      {/* Alerts List */}
       <CyberCard>
-        {filteredAlerts.length > 0 ? (
-          <div className="divide-y divide-white/5">
-            <StaggerContainer>
-              {filteredAlerts.map((alert) => (
-                <StaggerItem key={alert.id}>
-                  <AlertRow alert={alert} onMarkRead={markRead} onDelete={deleteAlert} />
-                </StaggerItem>
-              ))}
-            </StaggerContainer>
+        {alertsQuery.isLoading ? (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-6 w-6 text-zinc-500 animate-spin" />
           </div>
+        ) : alerts.length > 0 ? (
+          <>
+            <div className="divide-y divide-white/5">
+              <StaggerContainer>
+                {alerts.map((alert) => (
+                  <StaggerItem key={alert.id}>
+                    <AlertRow alert={alert} onMarkRead={handleMarkRead} onDelete={handleDelete} />
+                  </StaggerItem>
+                ))}
+              </StaggerContainer>
+            </div>
+
+            {/* Load more */}
+            {alertsQuery.data?.nextCursor && (
+              <div className="p-4 border-t border-white/5 flex justify-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCursor(alertsQuery.data!.nextCursor!)}
+                  disabled={alertsQuery.isFetching}
+                  className="border-white/15"
+                >
+                  {alertsQuery.isFetching ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
+                  Muat Lebih Banyak
+                </Button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="flex h-64 flex-col items-center justify-center text-center">
             <Bell className="mb-3 h-10 w-10 text-zinc-600" />
-            <div className="text-sm text-zinc-400">Tidak ada peringatan yang sesuai</div>
+            <div className="text-sm text-zinc-400">
+              {showUnreadOnly ? 'Semua peringatan sudah dibaca' : 'Belum ada peringatan'}
+            </div>
           </div>
         )}
       </CyberCard>
@@ -125,20 +230,25 @@ function FilterButton({ active, onClick, icon, children }: any) {
   );
 }
 
-function AlertRow({ alert, onMarkRead, onDelete }: { alert: AlertWithDevice; onMarkRead: (id: string) => void; onDelete: (id: string) => void }) {
+function AlertRow({ alert, onMarkRead, onDelete }: { alert: AlertItem; onMarkRead: (id: string) => void; onDelete: (id: string) => void }) {
   const sev = alert.severity || 'INFO';
   const accent = severityAccent[sev] || severityAccent.INFO;
 
-  const typeIcon = {
+  const typeIcon: Record<string, React.ReactNode> = {
     SPEEDING: <AlertTriangle className="h-4 w-4 text-orange-400" />,
     GEOFENCE_ENTER: <AlertCircle className="h-4 w-4 text-blue-400" />,
     GEOFENCE_EXIT: <AlertCircle className="h-4 w-4 text-purple-400" />,
     SOS: <AlertTriangle className="h-4 w-4 text-red-400" />,
-  }[alert.type] || <Info className="h-4 w-4 text-zinc-400" />;
+    IGNITION_ON: <Info className="h-4 w-4 text-green-400" />,
+    IGNITION_OFF: <Info className="h-4 w-4 text-zinc-400" />,
+    LOW_BATTERY: <AlertTriangle className="h-4 w-4 text-yellow-400" />,
+    DEVICE_OFFLINE: <AlertCircle className="h-4 w-4 text-zinc-400" />,
+    IDLE_TOO_LONG: <Info className="h-4 w-4 text-amber-400" />,
+  };
 
   return (
     <div className={`flex items-start gap-4 p-4 transition ${!alert.isRead ? accent : 'hover:bg-white/5'}`}>
-      <div className="mt-0.5">{typeIcon}</div>
+      <div className="mt-0.5">{typeIcon[alert.type] || <Info className="h-4 w-4 text-zinc-400" />}</div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="font-medium text-zinc-900 dark:text-white/95">{alert.message}</span>
@@ -148,7 +258,8 @@ function AlertRow({ alert, onMarkRead, onDelete }: { alert: AlertWithDevice; onM
         </div>
         <div className="mt-1 flex items-center gap-3 text-xs text-zinc-400 dark:text-white/50">
           {alert.device?.name && <span className="font-mono text-cyan-400/70">{alert.device.name}</span>}
-          <span>{alert.triggeredAt.toLocaleString('id-ID')}</span>
+          {alert.geofence?.name && <span className="text-zinc-500">• {alert.geofence.name}</span>}
+          <span>{new Date(alert.triggeredAt).toLocaleString('id-ID')}</span>
         </div>
       </div>
       <div className="flex shrink-0 gap-1.5">
